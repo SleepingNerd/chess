@@ -1,23 +1,22 @@
 import pygame
+import piece
+import texture
+
+# path
 
 
-def read_texture_pack(path):
-    image = pygame.image.load(path)
-    square_size = [round(image.get_width() / 16),
-                   round(image.get_height() / 16)]
-
-    texture_pack = TexturePack()
-    #
-
-    dict = {}
-
-
-class Piece():
-    def __init__(self, color, type):
-        self.type = type
-        self.color = color
+def read_fen()
 
 
 class Board():
+
     def __init__(self, texture_pack):
-        self.empty =
+        if isinstance(texture_pack, str):
+            self.texture_pack = texture.read_texture_pack(texture_pack)
+        elif isinstance(texture_pack, TexturePack):
+            self.texture_pack = TexturePack
+        else:
+            raise TypeError(str(texture_pack)
+                            + "must be of type TexturePack or string!")
+
+    def loadfen()

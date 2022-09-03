@@ -1,3 +1,4 @@
 {
-  "texture_pack" : "texture_pack.png"
+  "texture_pack" : "default.png"
+  "starting_position": "rnbqkbnr/p1pppppp/8/1p6/6P1/8/PPPPPP1P/RNBQKBNR w KQkq b6 0 2"
 }
