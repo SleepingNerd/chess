@@ -4,6 +4,7 @@ class Piece():
         self.type = type
         self.color = color
 
+
 # Constants to represent piece (and pawn) values in a human readable way
 WHITE = 0
 BLACK = 1
@@ -18,5 +19,6 @@ PAWN = 5
 EMPTY = 0
 
 
-CH_TO_PIECE = {"p" : Piece(BLACK, PAWN), "r": Piece(BLACK, ROOK), "n": Piece(BLACK, KNIGHT), "b": Piece(BLACK, BISHOP), "k": Piece(BLACK, KING), "q": Piece(BLACK, QUEEN) , "P":Piece(WHITE, PAWN), "R": Piece(WHITE, ROOK), "N": Piece(WHITE, KNIGHT),  "B": Piece(BLACK, BISHOP),  "K": Piece(BLACK, KING), "Q": Piece(BLACK, QUEEN)}
+CH_TO_PIECE = {"p": Piece(BLACK, PAWN), "r": Piece(BLACK, ROOK), "n": Piece(BLACK, KNIGHT), "b": Piece(BLACK, BISHOP), "k": Piece(BLACK, KING), "q": Piece(
+    BLACK, QUEEN), "P": Piece(WHITE, PAWN), "R": Piece(WHITE, ROOK), "N": Piece(WHITE, KNIGHT),  "B": Piece(WHITE, BISHOP),  "K": Piece(WHITE, KING), "Q": Piece(WHITE, QUEEN)}
 CH_TO_COLOR = {"w": WHITE, "b": BLACK}

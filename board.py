@@ -8,7 +8,6 @@ import texture
 class Board():
 
     def __init__(self, texture_pack, square_size):
-        self.load_texture_pack(texture_pack)
 
         self.square_size = square_size
         self.board = []
@@ -17,6 +16,9 @@ class Board():
         self.last_capture = 0
         self.en_passants = []
         self.surface = pygame.Surface([square_size[0] * 8, square_size[1] * 8])
+        self.load_texture_pack(texture_pack)
+
+    # Loads texture pack and scales to self.square_size
 
     def load_texture_pack(self, texture_pack):
         if isinstance(texture_pack, str):
@@ -26,9 +28,7 @@ class Board():
         else:
             raise TypeError(str(texture_pack)
                             + "must be of type TexturePack or string!")
-
-        print(len(self.texture_pack.pieces[0]), len(
-            self.texture_pack.pieces[1]))
+        self.texture_pack.scale(self.square_size)
 
     def empty_board(self):
         self.board = []
@@ -66,7 +66,6 @@ class Board():
         for y in range(0, len(self.board[0])):
             for x in range(0, len(self.board[1])):
                 if self.board[y][x] != piece.EMPTY:
-
                     self.surface.blit(self.texture_pack.pieces[self.board[y][x].color][self.board[y][x].type], [
                                       x*self.square_size[0], y * self.square_size[1]])
 

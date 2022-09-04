@@ -10,9 +10,15 @@ class TexturePack:
         self.empty = empty
         self.pieces = pieces
 
+    def scale(self, size):
+        for color in self.pieces:
+            for piece in color:
+                piece = pygame.transform.scale(piece, size)
 
 # Returns surface from square of image starting at position with size of square_size
 # NOTE: position is NOT muiltiplied by square_size
+
+
 def get_square_surf(position, square_size, image, colorkey):
     surf = pygame.Surface(square_size)
     rect = pygame.Rect(position, square_size)
@@ -39,6 +45,7 @@ def read_texture_pack(path):
 
     # Black and white's pieces
     for color in range(0, 2):
+
         for x in range(0, 5):
 
             pieces[color].append(get_square_surf(
@@ -49,12 +56,8 @@ def read_texture_pack(path):
                 square_color = 0
         row = square_size[1] * 7
 
-    print(len(pieces[0]), len(pieces[1]))
-
     # Black and white's pawns
     for y in range(square_size[1] * 6, 0, -square_size[1] * 5):
-
-        print(color)
 
         pieces[color].append(get_square_surf(
             [0, y], square_size, image, empty[square_color]))

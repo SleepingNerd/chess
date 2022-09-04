@@ -20,7 +20,8 @@ config_f = open(Path("config.json"))
 config = json.load(config_f)
 config_f.close()
 
-board = Board("assets/texture_packs/"+config["texture_pack"], [32, 32])
+board = Board("assets/texture_packs/"
+              + config["texture_pack"], [round(720/8), round(720/8)])
 board.loadfen(config["starting_position"])
 
 
@@ -32,5 +33,5 @@ while True:
 
     scene_manager.update()
     win.blit(pygame.transform.scale(scene_manager.surface, win_size), (0, 0))
-    board.draw(win, [100, 100])
+    board.draw(win, [0, 0])
     pygame.display.flip()
