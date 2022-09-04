@@ -16,10 +16,10 @@ class Board():
             raise TypeError(str(texture_pack)
                             + "must be of type TexturePack or string!")
 
+
+
         self.board = []
-
         self.turn = piece.WHITE
-
         self.castles = []
         self.last_capture =  0
         self.en_passants = []
@@ -57,3 +57,6 @@ class Board():
             self.board.append([])
             for j in range(0, 8):
                 self.board[i].append[piece.EMPTY]
+
+    def draw():
+        pass
