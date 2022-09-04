@@ -2,7 +2,7 @@ import pygame
 import sys
 import json
 import piece
-import board
+from board import Board
 from pathlib import Path
 
 
@@ -12,7 +12,8 @@ config_f = open(Path("config.json"))
 config = json.load(config_f)
 config_f.close()
 
-board.Board("ekfoe")
+board = Board("assets/texture_packs/"+config["texture_pack"])
+
 
 
 while True:
