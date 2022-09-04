@@ -9,7 +9,7 @@ from scenemanager import SceneManager
 
 pygame.init()
 
-win_size = [900,900]
+win_size = [800, 800]
 win = pygame.display.set_mode(win_size)
 pygame.display.set_caption("Bichess")
 
@@ -20,9 +20,8 @@ config_f = open(Path("config.json"))
 config = json.load(config_f)
 config_f.close()
 
-board = Board("assets/texture_packs/"+config["texture_pack"], [16,16])
+board = Board("assets/texture_packs/"+config["texture_pack"], [32, 32])
 board.loadfen(config["starting_position"])
-
 
 
 while True:
@@ -31,7 +30,7 @@ while True:
             pygame.quit()
             sys.exit()
 
-
     scene_manager.update()
-    win.blit(pygame.transform.scale(scene_manager.surface, win_size), (0,0))
+    win.blit(pygame.transform.scale(scene_manager.surface, win_size), (0, 0))
+    board.draw(win, [100, 100])
     pygame.display.flip()

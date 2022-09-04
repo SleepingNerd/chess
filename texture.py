@@ -49,10 +49,16 @@ def read_texture_pack(path):
                 square_color = 0
         row = square_size[1] * 7
 
+    print(len(pieces[0]), len(pieces[1]))
+
     # Black and white's pawns
     for y in range(square_size[1] * 6, 0, -square_size[1] * 5):
+
+        print(color)
+
         pieces[color].append(get_square_surf(
             [0, y], square_size, image, empty[square_color]))
         square_color = 1
+        color = 0
 
     return TexturePack(empty, pieces)
