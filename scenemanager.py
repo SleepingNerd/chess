@@ -23,20 +23,8 @@ class SceneManager():
     def start(self):
         self.surface.fill(self.start_bg)
 
-
-
-
-
-
-
-
-
-
     def update(self):
 
-        if pygame.event.get(pygame.mouse.get_pressed(1)):
-            self.click_pos = pygame.mouse.get_pos()
-        else:
-            self.click_pos = [-1, -1, -1]
+        
 
         self.state_to_function[self.state]()

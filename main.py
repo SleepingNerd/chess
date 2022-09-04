@@ -20,7 +20,8 @@ config_f = open(Path("config.json"))
 config = json.load(config_f)
 config_f.close()
 
-board = Board("assets/texture_packs/"+config["texture_pack"])
+board = Board("assets/texture_packs/"+config["texture_pack"], [16,16])
+board.loadfen(config["starting_position"])
 
 
 

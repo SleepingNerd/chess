@@ -7,7 +7,7 @@ import texture
 
 class Board():
 
-    def __init__(self, texture_pack):
+    def __init__(self, texture_pack, square_size):
         if isinstance(texture_pack, str):
             self.texture_pack = texture.read_texture_pack(texture_pack)
         elif isinstance(texture_pack, TexturePack):
@@ -16,8 +16,7 @@ class Board():
             raise TypeError(str(texture_pack)
                             + "must be of type TexturePack or string!")
 
-
-
+        self.square_size = square_size
         self.board = []
         self.turn = piece.WHITE
         self.castles = []
@@ -25,8 +24,18 @@ class Board():
         self.en_passants = []
 
 
-    def loadfen(fen):
-        empty_board()
+    def empty_board(self):
+        self.board = []
+        for i in range(0, 8):
+            self.board.append([])
+            for j in range(0, 8):
+                self.board[i].append(piece.EMPTY)
+
+
+    def loadfen(self, fen):
+        self.empty_board()
+
+
 
         fen = fen.split(" ")
         fen[0] =  fen[0].split("/")
@@ -46,17 +55,5 @@ class Board():
 
         self.turn = piece.CH_TO_COLOR[fen[1]]
 
-
-
-
-
-
-    def empty_board():
-        self.board = []
-        for i in range(0, 8):
-            self.board.append([])
-            for j in range(0, 8):
-                self.board[i].append[piece.EMPTY]
-
-    def draw():
-        pass
+    def draw(self, dest, pos):
+        for i in range(0, )
