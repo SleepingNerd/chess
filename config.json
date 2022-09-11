@@ -2,6 +2,6 @@
   "texture_pack" : "default.png",
   "starting_position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   "title_text": "BICHESS",
-  "title_color": [0,0,0],
-  "title_font": "Pixel1.ttf"
+  "title_color": [34,32,32],
+  "title_font": "WildWest.ttf"
 }

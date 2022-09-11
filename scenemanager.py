@@ -5,6 +5,7 @@ from board import Board
 from pathlib import Path
 import texture
 import sys
+import time
 
 
 class SceneManager():
@@ -34,15 +35,32 @@ class SceneManager():
         self.click_pos = [-1, -1, -1]
 
         self.title_font = pygame.font.Font(
-            "assets/fonts/" + self.config["title_font"], 100)
+            "assets/fonts/" + self.config["title_font"], 125)
+        self.title_rotation = 0
+        self.title_rotation_range = [-10, 10]
+        self.title_rotation_speed = 9
         self.title_surf = self.title_font.render(
             self.config["title_text"], True, self.config["title_color"])
         self.state_to_function = {self.START_STATE: self.start_screen}
 
+        self.dt = 0
+        self.last_time = time.time()
+
     def start_screen(self):
         self.surface.fill(self.start_bg)
-        self.surface.blit(self.title_surf, [texture.center_x(
+        self.surface.blit(pygame.transform.rotate(self.title_surf, self.title_rotation), [texture.center_x(
             self.title_surf, self.surface_size), 100])
+
+        self.title_rotation += self.dt*self.title_rotation_speed
+
+        if self.title_rotation < self.title_rotation_range[0]:
+            self.title_rotation = self.title_rotation_range[0]
+            self.title_rotation_speed *= -1
+        elif self.title_rotation > self.title_rotation_range[1]:
+            self.title_rotation = self.title_rotation_range[1]
+            self.title_rotation_speed *= -1
+
+    def ingame()
 
     def update(self):
         self.state_to_function[self.state]()
@@ -53,6 +71,9 @@ class SceneManager():
 
     def start(self):
         while True:
+            self.dt = time.time() - self.last_time
+            self.last_time = time.time()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
