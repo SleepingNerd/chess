@@ -1,4 +1,7 @@
 {
   "texture_pack" : "default.png",
-  "starting_position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+  "starting_position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+  "title_text": "BICHESS",
+  "title_color": [0,0,0],
+  "title_font": "OutlinedPixel1.ttf"
 }
