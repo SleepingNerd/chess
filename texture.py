@@ -65,3 +65,11 @@ def read_texture_pack(path):
         color = 0
 
     return TexturePack(empty, pieces)
+
+
+def center_x(surface, dest_size):
+    return round((dest_size[0] / 2) - (surface.get_width() / 2))
+
+
+def center_y(surface, dest_size):
+    return round((dest_size[1] / 2) - (surface.get_height() / 2))
