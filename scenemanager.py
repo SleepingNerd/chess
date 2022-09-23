@@ -60,7 +60,8 @@ class SceneManager():
             self.title_rotation = self.title_rotation_range[1]
             self.title_rotation_speed *= -1
 
-    def ingame()
+    def ingame():
+        pass
 
     def update(self):
         self.state_to_function[self.state]()

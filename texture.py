@@ -4,6 +4,9 @@ from pathlib import Path
 # Empty from left top to right
 # Pieces is a dict
 
+class Animation:
+    def __init__(self, path, )
+
 
 class TexturePack:
     def __init__(self, empty, pieces):
