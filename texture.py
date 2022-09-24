@@ -4,8 +4,69 @@ from pathlib import Path
 # Empty from left top to right
 # Pieces is a dict
 
+def center_x(surface, dest_size):
+    return round((dest_size[0] / 2) - (surface.get_width() / 2))
+
+
+def center_y(surface, dest_size):
+    return round((dest_size[1] / 2) - (surface.get_height() / 2))
+
+def load_and_scale(path, scale):
+    pygame.transform.scale(pygame.image.load(path), scale)
+
+def load_and_scale_animation(path, frames, scale):
+    image = pygame.image.load(path)
+
+    width = image.get_width()
+    height = image.get_height()
+
+    step = round(width / frames)
+    animation = []
+    for offset in range(0, width, step):
+        surf = pygame.Surface((step, height))
+        surf.blit(image, (0, 0), ())
+
+
+
+
+
+
+
+
+
+
+
+
 class Animation:
-    def __init__(self, path, )
+    def __init__(self, animation_states_to_path, base_size, time_per_frame, start_state):
+
+        self.state_to_animation = {}
+         #0: path
+         #1: frames (always from left to right)
+         #2: scale to scale to if it has
+
+        for key in animation_states_to_path.keys():
+            self.state_to_animation[key] = "image_array"
+
+            if len(animation_states_to_path) == 3:
+                size = animation_states_to_path[key][2]
+            else:
+                size = base_size
+
+            self.state_to_animation[key] =
+            animation_states_to_path[key][0]
+
+
+
+
+
+
+
+        self.state = start_state
+        self.frame = 0
+        self.time_since_last = 0
+
+
 
 
 class TexturePack:
@@ -68,11 +129,3 @@ def read_texture_pack(path):
         color = 0
 
     return TexturePack(empty, pieces)
-
-
-def center_x(surface, dest_size):
-    return round((dest_size[0] / 2) - (surface.get_width() / 2))
-
-
-def center_y(surface, dest_size):
-    return round((dest_size[1] / 2) - (surface.get_height() / 2))
