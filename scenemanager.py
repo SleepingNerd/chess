@@ -46,21 +46,21 @@ class SceneManager():
         self.dt = 0
         self.last_time = time.time()
 
+        self.start_animator = texture.AnimationHandler()
+
+        self.TITLE = "CHESS_TITLE"
+        self.TITLE_IDLE = "IDLE"
+        self.start_animator.add(texture.Animation({self.TITLE_IDLE: [Path("assets/images/title.png"), 2]},[600, 200],1,self.TITLE_IDLE, self.TITLE))
+
     def start_screen(self):
+        self.start_animator.update(self.dt)
         self.surface.fill(self.start_bg)
-        self.surface.blit(pygame.transform.rotate(self.title_surf, self.title_rotation), [texture.center_x(
-            self.title_surf, self.surface_size), 100])
 
-        self.title_rotation += self.dt*self.title_rotation_speed
+        self.surface.blit(self.start_animator.get_image(self.TITLE), (0,0))
 
-        if self.title_rotation < self.title_rotation_range[0]:
-            self.title_rotation = self.title_rotation_range[0]
-            self.title_rotation_speed *= -1
-        elif self.title_rotation > self.title_rotation_range[1]:
-            self.title_rotation = self.title_rotation_range[1]
-            self.title_rotation_speed *= -1
 
-    def ingame():
+
+    def ingame(self):
         pass
 
     def update(self):
