@@ -23,18 +23,25 @@ def load_and_scale_animation(path, frames, scale):
     step = round(width / frames)
     animation = []
     for offset in range(0, width, step):
-        surf = pygame.Surface((step, height))
-        surf.blit(image, (0, 0), ())
+        surface = pygame.transform.scale(get_slice(pygame.Rect((offset, 0), (step, height)), image), scale)
+        animation.append(surface)
+    return animation
 
 
+def get_slice(rect, image, colorkey=None):
+    surf = pygame.Surface(square_size)
+    surf.blit(image, (0, 0), rect)
+    if colorkey != None:
+        surf.set_colorkey(colorkey)
+    return surf
 
-
-
-
-
-
-
-
+class AnimationHandler:
+    def __init__(self):
+        self.animations = []
+    def update(dt):
+        for animation in animations:
+            animation.update(dt)
+    def get
 
 
 class Animation:
@@ -46,28 +53,37 @@ class Animation:
          #2: scale to scale to if it has
 
         for key in animation_states_to_path.keys():
-            self.state_to_animation[key] = "image_array"
+            self.state_to_animation[key] = ["image_array", "total_frames"]
 
             if len(animation_states_to_path) == 3:
-                size = animation_states_to_path[key][2]
+                scale = animation_states_to_path[key][2]
             else:
-                size = base_size
+                scale = base_size
 
-            self.state_to_animation[key] =
-            animation_states_to_path[key][0]
-
-
-
-
-
+            self.state_to_animation[key][0] = load_and_scale_animation(animation_states_to_path[key][0], animation_states_to_path[key][1], scale)
+            self.state_to_animation[key][1] = animation_states_to_path[key][1]
 
 
         self.state = start_state
         self.frame = 0
+        self.time_per_frame = time_per_frame
         self.time_since_last = 0
+        self.set_current_image()
 
 
+    def update(dt):
+        time_since_last += dt
+        if time_since_last >= time_per_frame:
+            time_since_last = time_since_last - time_per_frame
+            frame += 1
+            if frame >= self.state_to_animation[self.state][1]:
+                frame = frame - self.state_to_animation[self.state][1]
 
+    def set_current_image():
+        self.current_image = self.state_to_animation[self.state][0][self.frame]
+
+    def get_current_image():
+         return self.current_image
 
 class TexturePack:
     def __init__(self, empty, pieces):
@@ -81,14 +97,6 @@ class TexturePack:
 
 # Returns surface from square of image starting at position with size of square_size
 # NOTE: position is NOT muiltiplied by square_size
-
-
-def get_square_surf(position, square_size, image, colorkey):
-    surf = pygame.Surface(square_size)
-    rect = pygame.Rect(position, square_size)
-    surf.blit(image, (0, 0), rect)
-    surf.set_colorkey(colorkey)
-    return surf
 
 
 # Path should be a string, or a Path object
@@ -111,9 +119,8 @@ def read_texture_pack(path):
     for color in range(0, 2):
 
         for x in range(0, 5):
-
-            pieces[color].append(get_square_surf(
-                [x*square_size[0], row], square_size, image, empty[square_color]))
+rect = pygame.Rect(position, square_size)
+            pieces[color].append(get_slice(pygame.Rect([x*square_size[0], row], square_size), image, empty[square_color]))
 
             square_color += 1
             if square_color == 2:
@@ -123,8 +130,7 @@ def read_texture_pack(path):
     # Black and white's pawns
     for y in range(square_size[1] * 6, 0, -square_size[1] * 5):
 
-        pieces[color].append(get_square_surf(
-            [0, y], square_size, image, empty[square_color]))
+        pieces[color].append(get_slice(pygame.Rect([0, y], square_size), image, empty[square_color]))
         square_color = 1
         color = 0
 
