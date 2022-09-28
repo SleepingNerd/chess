@@ -1,6 +1,9 @@
 import pygame
 from pathlib import Path
 
+# Format indicator/header
+COMPLEX_HEADER = '+'
+
 # Empty from left top to right
 # Pieces is a dict
 
@@ -30,12 +33,12 @@ def load_and_scale_animation(path, frames, scale):
 
 def get_slice(rect, image, colorkey=None):
 
-    surf = pygame.Surface(rect.size)
-
+    surf = pygame.Surface(rect.size, pygame.SRCALPHA)
     surf.blit(image, (0, 0), rect)
 
     if colorkey != None:
         surf.set_colorkey(colorkey)
+
     return surf
 
 
@@ -128,42 +131,66 @@ class TexturePack:
 
 # Path should be a string, or a Path object
 
-# Rules:
+# Rules for basic:
 # Must be 8 by 8
 # One image
 # Image must not have colors used for background
 # Background must be a check pattern with two colors
 def read_texture_pack(path):
-    image = pygame.image.load(Path(path))
-    square_size = [round(image.get_width() / 8),
-                   round(image.get_height() / 8)]
+    # Determine format
+    file = path.split("/")
+    file = file[len(file)-1]
 
-    # Read first two empty squares from third row (matches with first two color from left top)
-    third_row = square_size[1]*2
-    empty = [image.get_at([0, third_row]), image.get_at(
-            [square_size[0], third_row])]
+    # Load image
+    image = pygame.image.load(Path(path))
 
     pieces = [[], []]
-    # Keeps track of the pieces colorkey
-    square_color = 0
-    row = 0
 
-    # Black and white's pieces
-    for color in range(0, 2):
+    if file[0] == COMPLEX_HEADER:
+        square_size = [round(image.get_width() / 8),
+                       round(image.get_height() / 10)]
 
-        for x in range(0, 5):
-            pieces[color].append(get_slice(pygame.Rect([x*square_size[0], row], square_size), image, empty[square_color]))
+        for color in range(0, 2):
+            for x in range(0, 5):
+                pieces[color].append(get_slice(pygame.Rect([x*square_size[0], row], square_size), image, empty[square_color]))
 
-            square_color += 1
-            if square_color == 2:
-                square_color = 0
-        row = square_size[1] * 7
 
-    # Black and white's pawns
-    for y in range(square_size[1] * 6, 0, -square_size[1] * 5):
 
-        pieces[color].append(get_slice(pygame.Rect([0, y], square_size), image, empty[square_color]))
-        square_color = 1
-        color = 0
 
-    return TexturePack(empty, pieces)
+
+    else:
+        square_size = [round(image.get_width() / 8),
+                       round(image.get_height() / 8)]
+
+        # Read first two empty squares from third row (matches with first two color from left top)
+        third_row = square_size[1]*2
+        empty = [image.get_at([0, third_row]), image.get_at(
+                [square_size[0], third_row])]
+
+        # Keeps track of the pieces colorkey
+        square_color = 0
+        row = 0
+
+        # Black and white's pieces
+        for color in range(0, 2):
+
+            for x in range(0, 5):
+                pieces[color].append(get_slice(pygame.Rect([x*square_size[0], row], square_size), image, empty[square_color]))
+
+                square_color += 1
+                if square_color == 2:
+                    square_color = 0
+            row = square_size[1] * 7
+
+        # Black and white's pawns
+        for y in range(square_size[1] * 6, 0, -square_size[1] * 5):
+
+            pieces[color].append(get_slice(pygame.Rect([0, y], square_size), image, empty[square_color]))
+            square_color = 1
+            color = 0
+
+        return TexturePack(empty, pieces)
+
+
+    def read_texture_pack(path, path2):
+        pass

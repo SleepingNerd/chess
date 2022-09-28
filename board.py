@@ -22,6 +22,8 @@ class Board():
 
     def load_texture_pack(self, texture_pack):
         if isinstance(texture_pack, str):
+
+
             self.texture_pack = texture.read_texture_pack(texture_pack)
         elif isinstance(texture_pack, texture.TexturePack):
             self.texture_pack = texture_pack

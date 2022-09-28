@@ -5,6 +5,7 @@ class Piece():
         self.color = color
 
 
+
 # Constants to represent piece (and pawn) values in a human readable way
 WHITE = 0
 BLACK = 1
