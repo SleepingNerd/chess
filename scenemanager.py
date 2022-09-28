@@ -54,8 +54,9 @@ class SceneManager():
 
     def start_screen(self):
         self.start_animator.update(self.dt)
-        self.surface.fill(self.start_bg)
 
+
+        self.surface.fill(self.start_bg)
         self.surface.blit(self.start_animator.get_image(self.TITLE), (0,0))
 
 
@@ -64,7 +65,7 @@ class SceneManager():
         self.board.draw(self.surface, (0,0))
 
     def update(self):
-        self.ingame()
+        self.state_to_function[self.state]()
 
     def screen_to_window(self):
         self.win.blit(pygame.transform.scale(

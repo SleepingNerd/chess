@@ -30,16 +30,20 @@ def load_and_scale_animation(path, frames, scale):
         animation.append(surface)
     return animation
 
-
+# Read as
 def get_slice(rect, image, colorkey=None):
+    surf = pygame.Surface(rect.size).convert_alpha()
 
-    surf = pygame.Surface(rect.size, pygame.SRCALPHA)
+
+
+    surf.fill((0,0,0,0))
     surf.blit(image, (0, 0), rect)
 
     if colorkey != None:
-        surf.set_colorkey(colorkey)
+        pygame.transform.threshold(surf, surf, colorkey, set_color=(0,0,0,0), threshold=(0,0,0,0), set_behavior=1, inverse_set = True)
 
     return surf
+
 
 
 class AnimationHandler:
@@ -113,14 +117,16 @@ class Animation:
          return self.current_image
 
 class TexturePack:
-    def __init__(self, empty, pieces):
-        self.empty = empty
+    def __init__(self, board, pieces):
+        self.board = board
         self.pieces = pieces
 
-    def scale(self, size):
+    def scale(self, square_size):
         for color in range(0, len(self.pieces)):
             for piece in range(0, len(self.pieces[color])):
-                self.pieces[color][piece] = pygame.transform.scale(self.pieces[color][piece], size)
+                self.pieces[color][piece] = pygame.transform.scale(self.pieces[color][piece], square_size)
+
+        self.board = pygame.transform.scale(self.board, [square_size[0] *8,square_size[1] *8])
 
 
 # Returns surface from square of image starting at position with size of square_size
@@ -142,7 +148,7 @@ def read_texture_pack(path):
     file = file[len(file)-1]
 
     # Load image
-    image = pygame.image.load(Path(path))
+    image = pygame.image.load(Path(path)).convert_alpha()
 
     pieces = [[], []]
 
@@ -151,8 +157,13 @@ def read_texture_pack(path):
                        round(image.get_height() / 10)]
 
         for color in range(0, 2):
-            for x in range(0, 5):
-                pieces[color].append(get_slice(pygame.Rect([x*square_size[0], row], square_size), image, empty[square_color]))
+            for x in range(0, 6):
+                pieces[color].append(get_slice(pygame.Rect([x*square_size[0], color * square_size[1]], square_size), image))
+
+        board = get_slice(pygame.Rect([0, 2*square_size[1]], [8*square_size[0], 8*square_size[1]]), image)
+
+        return TexturePack(board, pieces)
+
 
 
 
@@ -189,7 +200,15 @@ def read_texture_pack(path):
             square_color = 1
             color = 0
 
-        return TexturePack(empty, pieces)
+        board = pygame.Surface([square_size[0] *8, square_size[1] *8])
+        for i in range(0, 8):
+            for j in range(0, 8):
+                pygame.draw.rect(board, empty[(i + j) % 2], pygame.Rect(
+                    [i * square_size[0], j * square_size[1]], square_size))
+
+
+
+        return TexturePack(board, pieces)
 
 
     def read_texture_pack(path, path2):

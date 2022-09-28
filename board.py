@@ -60,10 +60,8 @@ class Board():
         self.turn = piece.CH_TO_COLOR[fen[1]]
 
     def draw(self, dest, pos):
-        for i in range(0, 8):
-            for j in range(0, 8):
-                pygame.draw.rect(self.surface, self.texture_pack.empty[(i + j) % 2], pygame.Rect(
-                    [i * self.square_size[0], j * self.square_size[1]], self.square_size))
+        self.surface.blit(self.texture_pack.board, (0,0))
+        
 
         for y in range(0, len(self.board[0])):
             for x in range(0, len(self.board[1])):
