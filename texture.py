@@ -109,12 +109,14 @@ class Animation:
             self.frame += 1
             if self.frame >= self.state_to_animation[self.state][1]:
                 self.frame = self.frame - self.state_to_animation[self.state][1]
+            self.set_current_image()
+
 
     def set_current_image(self):
         self.current_image = self.state_to_animation[self.state][0][self.frame]
 
     def get_current_image(self):
-         return self.current_image
+        return self.current_image
 
 class TexturePack:
     def __init__(self, board, pieces):
