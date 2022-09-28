@@ -31,7 +31,7 @@ class SceneManager():
         self.surface = pygame.Surface(self.surface_size)
 
         self.state = self.START_STATE
-        self.start_bg = (217, 160, 102)
+        self.start_bg = (238, 195, 154)
         self.click_pos = [-1, -1, -1]
 
         self.title_font = pygame.font.Font(
@@ -50,7 +50,7 @@ class SceneManager():
 
         self.TITLE = "CHESS_TITLE"
         self.TITLE_IDLE = "IDLE"
-        self.start_animator.add(texture.Animation({self.TITLE_IDLE: [Path("assets/images/title.png"), 2]},[600, 200],1,self.TITLE_IDLE, self.TITLE))
+        self.start_animator.add(texture.Animation({self.TITLE_IDLE: [Path("assets/images/title.png"), 2]},[600, 200],0.25,self.TITLE_IDLE, self.TITLE))
 
     def start_screen(self):
         self.start_animator.update(self.dt)

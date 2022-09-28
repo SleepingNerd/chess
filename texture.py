@@ -18,8 +18,7 @@ def load_and_scale(path, scale):
     pygame.transform.scale(pygame.image.load(path), scale)
 
 def load_and_scale_animation(path, frames, scale):
-    image = pygame.image.load(path).convert_alpha()
-
+    image = pygame.image.load(Path(path)).convert_alpha()
     width = image.get_width()
     height = image.get_height()
 
