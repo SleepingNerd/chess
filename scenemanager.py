@@ -22,7 +22,7 @@ class SceneManager():
         pygame.display.set_caption(self.config["title_text"])
 
         self.board = Board("assets/texture_packs/"
-                           + self.config["texture_pack"], [round(720/8), round(720/8)])
+                           + self.config["texture_pack"], [75,75])
         self.board.loadfen(self.config["starting_position"])
 
         self.START_STATE = 0
@@ -61,10 +61,10 @@ class SceneManager():
 
 
     def ingame(self):
-        pass
+        self.board.draw(self.surface, (0,0))
 
     def update(self):
-        self.state_to_function[self.state]()
+        self.ingame()
 
     def screen_to_window(self):
         self.win.blit(pygame.transform.scale(

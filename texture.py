@@ -30,12 +30,14 @@ def load_and_scale_animation(path, frames, scale):
 
 def get_slice(rect, image, colorkey=None):
 
-    surf = pygame.Surface(rect.size).convert_alpha()
+    surf = pygame.Surface(rect.size)
 
-    surf.blit(image, (0, 0), rect, pygame.BLEND_RGBA_ADD)
+    surf.blit(image, (0, 0), rect)
+
     if colorkey != None:
         surf.set_colorkey(colorkey)
     return surf
+
 
 class AnimationHandler:
     def __init__(self):
@@ -113,15 +115,24 @@ class TexturePack:
         self.pieces = pieces
 
     def scale(self, size):
-        for color in self.pieces:
-            for piece in color:
-                piece = pygame.transform.scale(piece, size)
+        for color in range(0, len(self.pieces)):
+            for piece in range(0, len(self.pieces[color])):
+                self.pieces[color][piece] = pygame.transform.scale(self.pieces[color][piece], size)
+
 
 # Returns surface from square of image starting at position with size of square_size
 # NOTE: position is NOT muiltiplied by square_size
 
 
+
+
 # Path should be a string, or a Path object
+
+# Rules:
+# Must be 8 by 8
+# One image
+# Image must not have colors used for background
+# Background must be a check pattern with two colors
 def read_texture_pack(path):
     image = pygame.image.load(Path(path))
     square_size = [round(image.get_width() / 8),

@@ -69,4 +69,5 @@ class Board():
                     self.surface.blit(self.texture_pack.pieces[self.board[y][x].color][self.board[y][x].type], [
                                       x*self.square_size[0], y * self.square_size[1]])
 
+
         dest.blit(self.surface, pos)
