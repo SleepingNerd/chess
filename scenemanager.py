@@ -17,17 +17,19 @@ class SceneManager():
         self.config = load(config_f)
         config_f.close()
 
-        self.win_size = [600, 600]
+        self.win_size = [800, 600]
         self.win = pygame.display.set_mode(self.win_size)
         pygame.display.set_caption(self.config["title_text"])
 
         self.board = Board("assets/texture_packs/"
-                           + self.config["texture_pack"], [75,75])
+                           + self.config["texture_pack"], [64, 64])
         self.board.loadfen(self.config["starting_position"])
 
         self.START_STATE = 0
 
-        self.surface_size = [600, 600]
+        self.surface_size = [800, 600]
+        self.board_gap_corner = (self.surface_size[1] - self.board.square_size[1] * 8) / 2
+
         self.surface = pygame.Surface(self.surface_size)
 
         self.state = self.START_STATE
@@ -60,10 +62,10 @@ class SceneManager():
 
 
     def ingame(self):
-        self.board.draw(self.surface, (0,0))
+        self.board.draw(self.surface, ((self.board_gap_corner, self.board_gap_corner)))
 
     def update(self):
-        self.state_to_function[self.state]()
+        self.ingame()
 
     def screen_to_window(self):
         self.win.blit(pygame.transform.scale(
