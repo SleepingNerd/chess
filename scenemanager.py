@@ -22,7 +22,7 @@ class SceneManager():
         pygame.display.set_caption(self.config["title_text"])
 
         self.board = Board("assets/texture_packs/"
-                           + self.config["texture_pack"], [64, 64])
+                           + self.config["texture_pack"], [64,64])
         self.board.loadfen(self.config["starting_position"])
 
         self.START_STATE = 0
