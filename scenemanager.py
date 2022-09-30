@@ -17,22 +17,25 @@ class SceneManager():
         self.config = load(config_f)
         config_f.close()
 
-        self.win_size = [800, 600]
-        self.win = pygame.display.set_mode(self.win_size)
+        self.win_size = [640, 360]
+        self.win = pygame.display.set_mode(self.win_size, pygame.RESIZABLE)
         pygame.display.set_caption(self.config["title_text"])
 
         self.board = Board("assets/texture_packs/"
-                           + self.config["texture_pack"], [64,64])
+                           + self.config["texture_pack"], [32,32])
         self.board.loadfen(self.config["starting_position"])
 
-        self.START_STATE = 0
+        self.MAIN_MENU_STATE = 0
+        self.INGAME_STATE = 1
+        self.START_STATE = self.INGAME_STATE
 
-        self.surface_size = [800, 600]
+        self.surface_size = [640, 360]
         self.board_gap_corner = (self.surface_size[1] - self.board.square_size[1] * 8) / 2
 
         self.surface = pygame.Surface(self.surface_size)
 
         self.state = self.START_STATE
+
         self.start_bg = (238, 195, 154)
         self.click_pos = [-1, -1, -1]
 
@@ -43,7 +46,7 @@ class SceneManager():
         self.title_rotation_speed = 9
         self.title_surf = self.title_font.render(
             self.config["title_text"], True, self.config["title_color"])
-        self.state_to_function = {self.START_STATE: self.start_screen}
+        self.state_to_function = {self.MAIN_MENU_STATE: self.start_screen, self.INGAME_STATE: self.ingame}
 
         self.dt = 0
         self.last_time = time.time()
@@ -62,10 +65,11 @@ class SceneManager():
 
 
     def ingame(self):
+        self.surface.fill((4,0,35))
         self.board.draw(self.surface, ((self.board_gap_corner, self.board_gap_corner)))
 
     def update(self):
-        self.ingame()
+        self.state_to_function[self.state]()
 
     def screen_to_window(self):
         self.win.blit(pygame.transform.scale(
