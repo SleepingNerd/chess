@@ -18,7 +18,7 @@ class SceneManager():
         config_f.close()
 
         self.win_size = [640, 360]
-        self.win = pygame.display.set_mode(self.win_size, pygame.RESIZABLE)
+        self.win = pygame.display.set_mode(self.win_size)
         pygame.display.set_caption(self.config["title_text"])
 
         self.board = Board("assets/texture_packs/"
@@ -30,7 +30,7 @@ class SceneManager():
         self.START_STATE = self.INGAME_STATE
 
         self.surface_size = [640, 360]
-        self.board_gap_corner = (self.surface_size[1] - self.board.square_size[1] * 8) / 2
+        self.board_gap_corner = [(self.surface_size[0] - self.board.square_size[0] * 8) / 2, (self.surface_size[1] - self.board.square_size[0] * 8) / 2]
 
         self.surface = pygame.Surface(self.surface_size)
 

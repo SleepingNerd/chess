@@ -184,7 +184,7 @@ def read_texture_pack(path):
         row = 0
 
         # Black and white's pieces
-        for color in range(0, 2):
+        for color in range(-1, 1):
 
             for x in range(0, 5):
                 pieces[color].append(get_slice(pygame.Rect([x*square_size[0], row], square_size), image, empty[square_color]))
@@ -194,12 +194,13 @@ def read_texture_pack(path):
                     square_color = 0
             row = square_size[1] * 7
 
+        color = 0
         # Black and white's pawns
         for y in range(square_size[1] * 6, 0, -square_size[1] * 5):
 
             pieces[color].append(get_slice(pygame.Rect([0, y], square_size), image, empty[square_color]))
             square_color = 1
-            color = 0
+            color = 1
 
         board = pygame.Surface([square_size[0] *8, square_size[1] *8])
         for i in range(0, 8):
