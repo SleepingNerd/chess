@@ -17,19 +17,20 @@ class SceneManager():
         self.config = load(config_f)
         config_f.close()
 
-        self.win_size = [640, 360]
+        self.win_size = [640*1.5 , 360*1.5]
         self.win = pygame.display.set_mode(self.win_size)
         pygame.display.set_caption(self.config["title_text"])
+        self.fullscreen = False
 
         self.board = Board("assets/texture_packs/"
-                           + self.config["texture_pack"], [32,32])
+                           + self.config["texture_pack"], [64, 64])
         self.board.loadfen(self.config["starting_position"])
 
         self.MAIN_MENU_STATE = 0
         self.INGAME_STATE = 1
         self.START_STATE = self.INGAME_STATE
 
-        self.surface_size = [640, 360]
+        self.surface_size = [640*1.5, 360*1.5]
         self.board_gap_corner = [(self.surface_size[0] - self.board.square_size[0] * 8) / 2, (self.surface_size[1] - self.board.square_size[0] * 8) / 2]
 
         self.surface = pygame.Surface(self.surface_size)
@@ -84,6 +85,7 @@ class SceneManager():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+
 
             self.update()
             self.screen_to_window()
