@@ -17,36 +17,42 @@ class SceneManager():
         self.config = load(config_f)
         config_f.close()
 
-        self.win_size = [640*1.5 , 360*1.5]
+        win = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
+        self.screen_resolution =  [win.get_width(), win.get_height()]
+
+        self.win_size = self.screen_resolution
         self.win = pygame.display.set_mode(self.win_size)
+
+         
+
+
+        
         pygame.display.set_caption(self.config["title_text"])
         self.fullscreen = False
 
         self.board = Board("assets/texture_packs/"
-                           + self.config["texture_pack"], [64, 64])
+                           + self.config["texture_pack"], [48, 48])
         self.board.loadfen(self.config["starting_position"])
+
+        
 
         self.MAIN_MENU_STATE = 0
         self.INGAME_STATE = 1
         self.START_STATE = self.INGAME_STATE
 
-        self.surface_size = [640*1.5, 360*1.5]
+        self.surface_size = [950, 540]
         self.board_gap_corner = [(self.surface_size[0] - self.board.square_size[0] * 8) / 2, (self.surface_size[1] - self.board.square_size[0] * 8) / 2]
 
         self.surface = pygame.Surface(self.surface_size)
 
         self.state = self.START_STATE
 
-        self.start_bg = (238, 195, 154)
+        self.ui_bg = (10,10,10)	
+        self.ui_secondary = (20, 20, 20)	
         self.click_pos = [-1, -1, -1]
 
-        self.title_font = pygame.font.Font(
-            "assets/fonts/" + self.config["title_font"], 125)
-        self.title_rotation = 0
-        self.title_rotation_range = [-10, 10]
-        self.title_rotation_speed = 9
-        self.title_surf = self.title_font.render(
-            self.config["title_text"], True, self.config["title_color"])
+     
+     
         self.state_to_function = {self.MAIN_MENU_STATE: self.start_screen, self.INGAME_STATE: self.ingame}
 
         self.dt = 0
@@ -58,15 +64,19 @@ class SceneManager():
         self.TITLE_IDLE = "IDLE"
         self.start_animator.add(texture.Animation({self.TITLE_IDLE: [Path("assets/images/title.png"), 2]},[600, 200],0.25,self.TITLE_IDLE, self.TITLE))
 
+        self.board_underlay_size = [40,40]
+        self.board_underlay = pygame.Rect([self.board_gap_corner[0]- round(self.board_underlay_size[0]/2), self.board_gap_corner[1]- round(self.board_underlay_size[1]/2)],[(self.board.square_size[0] * 8) + self.board_underlay_size[0], (self.board.square_size[1] * 8)+self.board_underlay_size[1]])
+    
     def start_screen(self):
         self.start_animator.update(self.dt)
-        self.surface.fill(self.start_bg)
+        self.surface.fill(self.ui_bg)
         self.surface.blit(self.start_animator.get_image(self.TITLE), (0,0))
 
 
 
     def ingame(self):
-        self.surface.fill((4,0,35))
+        self.surface.fill(self.ui_bg)
+        pygame.draw.rect(self.surface, self.ui_secondary, self.board_underlay)
         self.board.draw(self.surface, ((self.board_gap_corner, self.board_gap_corner)))
 
     def update(self):
