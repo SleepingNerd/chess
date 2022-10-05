@@ -1,3 +1,4 @@
+import pygame
 # Button class
 class Button:
     # Constructor,
@@ -6,10 +7,9 @@ class Button:
     # Sound will be loaded in and played when Button is clicked,
     # Self.clicked is set to false by default
     def __init__(self, size, pos, sound):
-        self.size = size
         self.rect = pygame.Rect(pos, size)
         self.sound = pygame.mixer.Sound(sound)
-        self.image = pygame.Surface((0,0))
+        self.image = pygame.Surface(self.rect)
         self.clicked = False
 
     # If click_pos overlaps with self.rect,
@@ -34,8 +34,15 @@ class Button:
     # Blits self.image on surf at self.rect
     def draw(self, surf):
         surf.blit(self.image, self.rect)
+
 class TextButton(Button):
-    def __init_(self, size, pos, sound, text, font, textcolor, color):
+    def __init_(self, size, pos, sound, text, font, font_color, bg_color):
         super().init(self, size, pos, sound)
-        self.font = pygame.font.Font(font, 125)
-        self.font_surf = self.start_font.render(text, True, textcolor)
+        self.font = font
+        font_surf = font.render(text, True, font_color, background=bg_color)
+        self.surf = pygame.transform.smoothscale(font_surf)
+    def draw(dest):
+        dest.blit(self.surf, self.rect)
+        
+
+
