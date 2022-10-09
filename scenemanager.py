@@ -24,10 +24,10 @@ class SceneManager():
         self.win_size = self.screen_resolution
         self.win = pygame.display.set_mode(self.win_size)
 
-         
 
 
-        
+
+
         pygame.display.set_caption(self.config["title_text"])
 
         self.fullscreen = False
@@ -36,8 +36,8 @@ class SceneManager():
                            + self.config["texture_pack"], [48, 48])
         self.board.loadfen(self.config["starting_position"])
 
-    
-        
+
+
 
         self.MAIN_MENU_STATE = 0
         self.INGAME_STATE = 1
@@ -50,18 +50,19 @@ class SceneManager():
 
         self.state = self.START_STATE
 
-        self.ui_bg = (10,10,10)	
-        self.ui_secondary = (20, 20, 20)	
+        self.ui_bg = (10,10,10)
+        self.ui_secondary = (20, 20, 20)
         self.ui_text = (255,255,255)
         self.click_pos = [-1, -1, -1]
-        
-        
-        self.ui_font = pygame.font.Font(Path("assets/fonts/ui.TTF"),30)
-        self.title_surface = self.ui_font.render(self.config["title_text"], True, self.ui_text)
 
 
-     
-     
+        self.ui_font = pygame.font.Font(Path("assets/fonts/Gamer.TTF"),50)
+        self.title_surface = self.ui_font.render(self.config["title_text"], False, self.ui_text)
+        self.title_pos = [texture.center_x(self.title_surface, self.surface_size), 20]
+
+
+
+
         self.state_to_function = {self.MAIN_MENU_STATE: self.start_screen, self.INGAME_STATE: self.ingame}
 
         self.dt = 0
@@ -79,7 +80,7 @@ class SceneManager():
         self.start_animator.update(self.dt)
         self.surface.fill(self.ui_bg)
         self.surface.blit(self.start_animator.get_image(self.TITLE), (0,0))
-        
+
 
 
 
@@ -87,7 +88,7 @@ class SceneManager():
         self.surface.fill(self.ui_bg)
         pygame.draw.rect(self.surface, self.ui_secondary, self.board_underlay)
         self.board.draw(self.surface, ((self.board_gap_corner, self.board_gap_corner)))
-        self.surface.blit(self.title_surface, (400,30))
+        self.surface.blit(self.title_surface, self.title_pos)
 
     def update(self):
         self.state_to_function[self.state]()

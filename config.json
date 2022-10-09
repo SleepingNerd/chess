@@ -1,6 +1,5 @@
 {
-  "texture_pack" : "pixelart.png",
+  "texture_pack" : "+extner.png",
   "starting_position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  "title_text": "BICHESS"
-
+  "title_text": "Chess but horrible"
 }
