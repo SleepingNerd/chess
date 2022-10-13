@@ -10,11 +10,11 @@ COMPLEX_HEADER = '+'
 def center_x(surface, dest_size):
     return round((dest_size[0] / 2) - (surface.get_width() / 2))
 
-
-
-
 def center_y(surface, dest_size):
     return round((dest_size[1] / 2) - (surface.get_height() / 2))
+
+def center(surface, dest_size):
+    return [center_x(surface, dest_size), center_y(surface,dest_size)]
 
 def load_and_scale(path, scale):
     pygame.transform.scale(pygame.image.load(path), scale)

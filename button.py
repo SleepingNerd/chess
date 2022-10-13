@@ -1,4 +1,22 @@
 import pygame
+from texture import center
+
+# Converts pos on window_size (or really just any size) to a pos on dest_size
+def convert_window_pos(pos, window_size, dest_size):
+    return [round(pos[0] / (window_size[0] /dest_size[0])), round(pos[1] / (window_size[1] /dest_size[1]))]
+
+class ButtonHandler():
+    def __init__(self, buttons):
+        self.buttons = buttons
+    def updates(self, click_pos):
+        if click_pos[0] != None and click_pos[1] != None:
+            for button in self.buttons:
+                button.update(click_pos)
+    def draws(self, dest):
+        for button in self.buttons:
+                button.draw(dest)
+        
+            
 # Button class
 class Button:
     # Constructor,
@@ -9,7 +27,7 @@ class Button:
     def __init__(self, size, pos, sound):
         self.rect = pygame.Rect(pos, size)
         self.sound = pygame.mixer.Sound(sound)
-        self.image = pygame.Surface(self.rect)
+        self.image = pygame.Surface(self.rect.size)
         self.clicked = False
 
     # If click_pos overlaps with self.rect,
@@ -36,12 +54,14 @@ class Button:
         surf.blit(self.image, self.rect)
 
 class TextButton(Button):
-    def __init_(self, size, pos, sound, text, font, font_color, bg_color):
-        super().init(self, size, pos, sound)
+    def __init__(self, size, pos, sound, text, font, font_color, bg_color, antialiasing=False):
+        super().__init__(size, pos, sound) # super(Button, self)
         self.font = font
-        font_surf = font.render(text, True, font_color, background=bg_color)
-        self.surf = pygame.transform.smoothscale(font_surf)
-    def draw(dest):
+        font_surf = font.render(text, antialiasing, font_color, bg_color)
+        self.surf = pygame.Surface(self.rect.size)
+        self.surf.fill(bg_color)
+        self.surf.blit(font_surf, center(font_surf, self.rect.size))
+    def draw(self, dest):
         dest.blit(self.surf, self.rect)
         
 
