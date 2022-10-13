@@ -61,11 +61,20 @@ class SceneManager():
         self.title_pos = [texture.center_x(self.title_surface, self.surface_size), 20]
         
         self.sound_pack = "assets/sounds/" + self.config["sound_pack"] +"/"
+        buttons = ["Play", "Settings", "Exit"]
+        self.main_ui_buttons = button.ButtonHandler([])
+        start = [35, self.board_gap_corner[1]+5]
+        height = 50
+        width = 200
+        gap = 5 + height 
+        for y in range (0,3):
+            self.main_ui_buttons.buttons.append( button.TextButton([width,height], [start[0],start[1] + gap * y],Path(self.sound_pack + "click.wav"), buttons[y], self.buttons_font, self.ui_text, self.ui_secondary)) 
+            
+        self.other_ui_rect = pygame.Rect([start[0],start[1]*3+height - 20],[width, height*4])
+        self.PLAY_STATE = "PLAY"
+        self.SETTINGS_STATE = "SETTINGS"
+        self.ui_state = None
         
-        self.main_ui_buttons = button.ButtonHandler([button.TextButton([200,100], [20,100],Path(self.sound_pack + "click.wav"), "Play", self.buttons_font, self.ui_text, self.ui_secondary)])
-
-
-
 
         self.state_to_function = {self.MAIN_MENU_STATE: self.start_screen, self.INGAME_STATE: self.ingame}
 
@@ -78,7 +87,7 @@ class SceneManager():
         self.TITLE_IDLE = "IDLE"
         self.start_animator.add(texture.Animation({self.TITLE_IDLE: [Path("assets/images/title.png"), 2]},[600, 200],0.25,self.TITLE_IDLE, self.TITLE))
         # Is [None,None,None] if player hasn't clicked this frame, else is click position on surface
-        self.click_pos = [None, None, None]
+        self.click_pos = [None, None]
         self.board_underlay_size = [40,40]
         self.board_underlay = pygame.Rect([self.board_gap_corner[0]- round(self.board_underlay_size[0]/2), self.board_gap_corner[1]- round(self.board_underlay_size[1]/2)],[(self.board.square_size[0] * 8) + self.board_underlay_size[0], (self.board.square_size[1] * 8)+self.board_underlay_size[1]])
     def start_screen(self):
@@ -86,16 +95,49 @@ class SceneManager():
         self.surface.fill(self.ui_bg)
         self.surface.blit(self.start_animator.get_image(self.TITLE), (0,0))
 
-
-
-
+    def update_main_ui(self):
+        # Play pressed:
+        if self.main_ui_buttons.buttons[0].pressed:
+            self.main_ui_buttons.buttons[0].pressed = False
+            self.ui_state = self.PLAY_STATE 
+        # Settings pressed:
+        elif self.main_ui_buttons.buttons[1].pressed:
+            self.main_ui_buttons.buttons[1].pressed = False
+            self.ui_state = self.SETTINGS_STATE        
+        # Exit
+        elif self.main_ui_buttons.buttons[2].pressed:
+            self.quit()       
+            
+    def draw_main_ui(self):
+        self.main_ui_buttons.draws(self.surface)
+        
+        if self.ui_state == self.PLAY_STATE:
+            pygame.draw.rect(self.surface, self.ui_secondary, self.other_ui_rect)
+            
+            
+        elif self.ui_state == self.SETTINGS_STATE:
+            pass
+            
+    
     def ingame(self):
+        self.main_ui_buttons.updates(self.click_pos)
+        
+        self.update_main_ui()
+        
+            
+        
+        
+        
+        # Drawing loop
         self.surface.fill(self.ui_bg)
         pygame.draw.rect(self.surface, self.ui_secondary, self.board_underlay)
         self.board.draw(self.surface, ((self.board_gap_corner, self.board_gap_corner)))
         self.surface.blit(self.title_surface, self.title_pos)
-        self.main_ui_buttons.draws(self.surface)
-        self.main_ui_buttons.updates(self.click_pos)
+        self.draw_main_ui()
+        
+        
+        
+        
 
     def update(self):
         self.state_to_function[self.state]()
@@ -106,14 +148,13 @@ class SceneManager():
 
     def start(self):
         while True:
-            self.click_pos = [None, None, None]
+            self.click_pos = [None, None]
             self.dt = time.time() - self.last_time
             self.last_time = time.time()
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.quit()
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 1:
                         self.click_pos = button.convert_window_pos(event.pos, self.win_size, self.surface_size)
@@ -122,3 +163,7 @@ class SceneManager():
             self.update()
             self.screen_to_window()
             pygame.display.flip()
+    def quit(self):
+        pygame.quit()
+        sys.exit()
+        
