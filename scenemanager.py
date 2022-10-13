@@ -94,7 +94,8 @@ class SceneManager():
         pygame.draw.rect(self.surface, self.ui_secondary, self.board_underlay)
         self.board.draw(self.surface, ((self.board_gap_corner, self.board_gap_corner)))
         self.surface.blit(self.title_surface, self.title_pos)
-        self.main_ui_buttons[0].draw(self.surface)
+        self.main_ui_buttons.draws(self.surface)
+        self.main_ui_buttons.updates(self.click_pos)
 
     def update(self):
         self.state_to_function[self.state]()
