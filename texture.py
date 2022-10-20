@@ -8,7 +8,9 @@ COMPLEX_HEADER = '+'
 # Pieces is a dict
 
 def center_x(surface, dest_size):
-    return round((dest_size[0] / 2) - (surface.get_width() / 2))
+    if isinstance(surface, pygame.Surface):
+        surface = surface.get_size()
+    return round((dest_size[0] / 2) - (surface[0] / 2))
 
 def center_y(surface, dest_size):
     return round((dest_size[1] / 2) - (surface.get_height() / 2))

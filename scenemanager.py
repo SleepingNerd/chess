@@ -1,3 +1,4 @@
+from cgitb import text
 import pygame
 
 from json import load
@@ -7,6 +8,7 @@ import texture
 import sys
 import time
 import button
+import player
 
 
 class SceneManager():
@@ -32,10 +34,9 @@ class SceneManager():
 
         self.fullscreen = False
 
-        self.board = Board("assets/texture_packs/"
+        self.board = Board("assets/images/board_and_pieces/"
                            + self.config["texture_pack"], [48, 48])
         self.board.loadfen(self.config["starting_position"])
-
 
 
 
@@ -57,6 +58,8 @@ class SceneManager():
 
         self.title_font =   pygame.font.Font(Path("assets/fonts/Gamer.TTF"),50)
         self.buttons_font = pygame.font.Font(Path("assets/fonts/Gamer.TTF"),50)
+    
+        
         self.title_surface = self.title_font.render(self.config["title_text"], False, self.ui_text)
         self.title_pos = [texture.center_x(self.title_surface, self.surface_size), 20]
         
@@ -64,6 +67,12 @@ class SceneManager():
         buttons = ["Play", "Settings", "Exit"]
         self.main_ui_buttons = button.ButtonHandler([])
         start = [35, self.board_gap_corner[1]+5]
+        self.portrets = "assets/images/ui/portrets/"+self.config["portrets"]+"/"
+        
+        self.portret_size = [100,100]
+        self.players = [player.Player(self.portrets + "player.png", self.portret_size, "Player", self.buttons_font, self.ui_text)]
+        self.player_index = 0
+        
         height = 50
         width = 200
         gap = 5 + height 
@@ -71,6 +80,11 @@ class SceneManager():
             self.main_ui_buttons.buttons.append( button.TextButton([width,height], [start[0],start[1] + gap * y],Path(self.sound_pack + "click.wav"), buttons[y], self.buttons_font, self.ui_text, self.ui_secondary)) 
             
         self.other_ui_rect = pygame.Rect([start[0],start[1]*3+height - 20],[width, height*4])
+        self.portret_rect = pygame.Rect([self.other_ui_rect.left +texture.center_x(self.portret_size, self.other_ui_rect.size), self.other_ui_rect.top + round(self.portret_size[1] /4)], self.portret_size)
+        self.portret_name_rect = self.portret_rect.move(0, self.portret_size[1]+20)
+
+
+        
         self.PLAY_STATE = "PLAY"
         self.SETTINGS_STATE = "SETTINGS"
         self.ui_state = None
@@ -83,9 +97,6 @@ class SceneManager():
 
         self.start_animator = texture.AnimationHandler()
 
-        self.TITLE = "CHESS_TITLE"
-        self.TITLE_IDLE = "IDLE"
-        self.start_animator.add(texture.Animation({self.TITLE_IDLE: [Path("assets/images/title.png"), 2]},[600, 200],0.25,self.TITLE_IDLE, self.TITLE))
         # Is [None,None,None] if player hasn't clicked this frame, else is click position on surface
         self.click_pos = [None, None]
         self.board_underlay_size = [40,40]
@@ -113,6 +124,10 @@ class SceneManager():
         
         if self.ui_state == self.PLAY_STATE:
             pygame.draw.rect(self.surface, self.ui_secondary, self.other_ui_rect)
+            self.surface.blit(self.players[self.player_index].image, self.portret_rect)
+            self.portret_name_rect.x =  self.other_ui_rect.left + texture.center_x(self.players[self.player_index].name_surf, self.other_ui_rect.size)
+            self.surface.blit(self.players[self.player_index].name_surf, self.portret_name_rect)
+            
             
             
         elif self.ui_state == self.SETTINGS_STATE:

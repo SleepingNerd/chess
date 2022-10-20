@@ -2,5 +2,6 @@
   "texture_pack" : "pixelart.png",
   "sound_pack"   : "default",
   "starting_position": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-  "title_text": "Chess but horrible"
+  "title_text": "Chess but horrible",
+  "portrets" : "default"
 }
