@@ -69,7 +69,7 @@ class SceneManager():
         start = [35, self.board_gap_corner[1]+5]
         self.portrets = "assets/images/ui/portrets/"+self.config["portrets"]+"/"
         
-        self.portret_size = [100,100]
+        self.portret_size = [75,75]
         self.players = [player.Player(self.portrets + "player.png", self.portret_size, "Player", self.buttons_font, self.ui_text)]
         self.player_index = 0
         
@@ -79,8 +79,11 @@ class SceneManager():
         for y in range (0,3):
             self.main_ui_buttons.buttons.append( button.TextButton([width,height], [start[0],start[1] + gap * y],Path(self.sound_pack + "click.wav"), buttons[y], self.buttons_font, self.ui_text, self.ui_secondary)) 
             
+        self.portret_underlay_gap = 10
         self.other_ui_rect = pygame.Rect([start[0],start[1]*3+height - 20],[width, height*4])
-        self.portret_rect = pygame.Rect([self.other_ui_rect.left +texture.center_x(self.portret_size, self.other_ui_rect.size), self.other_ui_rect.top + round(self.portret_size[1] /4)], self.portret_size)
+        self.portret_rect = pygame.Rect([self.other_ui_rect.left +texture.center_x(self.portret_size, self.other_ui_rect.size), self.other_ui_rect.top + round(self.portret_size[1] /2)], self.portret_size)
+        self.portret_underlay = self.portret_rect.move([-self.portret_underlay_gap, -self.portret_underlay_gap])
+        self.portret_underlay.size = [self.portret_underlay.width + self.portret_underlay_gap*2, self.portret_underlay.height+self.portret_underlay_gap*2]
         self.portret_name_rect = self.portret_rect.move(0, self.portret_size[1]+20)
 
 
@@ -126,8 +129,11 @@ class SceneManager():
             pygame.draw.rect(self.surface, self.ui_secondary, self.other_ui_rect)
             self.surface.blit(self.players[self.player_index].image, self.portret_rect)
             self.portret_name_rect.x =  self.other_ui_rect.left + texture.center_x(self.players[self.player_index].name_surf, self.other_ui_rect.size)
+            pygame.draw.rect(self.surface, self.ui_secondary, self.portret_underlay)
+            self.surface.blit(self.players[self.player_index].image, self.portret_rect)
+
             self.surface.blit(self.players[self.player_index].name_surf, self.portret_name_rect)
-            
+        
             
             
         elif self.ui_state == self.SETTINGS_STATE:
