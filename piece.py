@@ -19,6 +19,7 @@ KING = 4
 PAWN = 5
 EMPTY = 0
 
+COLOR_TO_WORD = ["White", "Black"]
 
 CH_TO_PIECE = {"p": Piece(BLACK, PAWN), "r": Piece(BLACK, ROOK), "n": Piece(BLACK, KNIGHT), "b": Piece(BLACK, BISHOP), "k": Piece(BLACK, KING), "q": Piece(
     BLACK, QUEEN), "P": Piece(WHITE, PAWN), "R": Piece(WHITE, ROOK), "N": Piece(WHITE, KNIGHT),  "B": Piece(WHITE, BISHOP),  "K": Piece(WHITE, KING), "Q": Piece(WHITE, QUEEN)}

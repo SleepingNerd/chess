@@ -33,6 +33,7 @@ class Button:
     # If click_pos overlaps with self.rect,
     # Invoke self.clicked_function, play self.sound and set self.clicked to true
     def update(self, click_pos):
+        
         # If click position and button rect overlap...
         if self.rect.collidepoint(click_pos):
             # Play self.sound
@@ -57,12 +58,28 @@ class TextButton(Button):
     def __init__(self, size, pos, sound, text, font, font_color, bg_color, antialiasing=False):
         super().__init__(size, pos, sound) # super(Button, self)
         self.font = font
-        font_surf = font.render(text, antialiasing, font_color, bg_color)
+        self.antialiasing = antialiasing
+        self.text = text
+        self.font_color = font_color
+        self.bg_color = bg_color
+        self.redraw_button()
+        
+        
+    def redraw_button(self):
+        font_surf = self.font.render(self.text, self.antialiasing, self.font_color, self.bg_color)
         self.surf = pygame.Surface(self.rect.size)
-        self.surf.fill(bg_color)
+        self.surf.fill(self.bg_color)
         self.surf.blit(font_surf, center(font_surf, self.rect.size))
+        
     def draw(self, dest):
         dest.blit(self.surf, self.rect)
-        
+    def change_font_color(self, color):
+        self.font_color = color
+        self.redraw_button()
+
+
+    def change_bg_color(self, color):
+        self.bg_color = color
+        self.redraw_button()
 
 

@@ -4,11 +4,13 @@ import pygame
 from json import load
 from board import Board
 from pathlib import Path
+from button import TextButton
 import texture
 import sys
 import time
 import button
 import player
+import piece
 
 
 class SceneManager():
@@ -52,8 +54,11 @@ class SceneManager():
         self.state = self.START_STATE
 
         self.ui_bg = (10,10,10)
+        self.ui_white = (255,255,255)
+        self.ui_black = (0,0,0)
         self.ui_secondary = (30,30,30)
         self.ui_text = (255,255,255)
+        self.ui_green = (124,252,0)
 
 
         self.title_font =   pygame.font.Font(Path("assets/fonts/Gamer.TTF"),50)
@@ -70,8 +75,9 @@ class SceneManager():
         self.portrets = "assets/images/ui/portrets/"+self.config["portrets"]+"/"
         
         self.portret_size = [75,75]
-        self.players = [player.Player(self.portrets + "player.png", self.portret_size, "Player", self.buttons_font, self.ui_text)]
+        self.players = [player.Player(self.portrets + "player.png", self.portret_size, "Player", self.buttons_font, self.ui_text), player.Player(self.portrets + "bot.png", self.portret_size, "Bot", self.buttons_font, self.ui_text),player.Player(self.portrets + "bot.png", self.portret_size, "I", self.buttons_font, self.ui_text),player.Player(self.portrets + "bot.png", self.portret_size, "Don't", self.buttons_font, self.ui_text),player.Player(self.portrets + "bot.png", self.portret_size, "Care", self.buttons_font, self.ui_text),player.Player(self.portrets + "bot.png", self.portret_size, "bozo", self.buttons_font, self.ui_text)]
         self.player_index = 0
+        self.total_players = len(self.players)
         
         height = 50
         width = 200
@@ -81,17 +87,28 @@ class SceneManager():
             
         self.portret_underlay_gap = 10
         self.other_ui_rect = pygame.Rect([start[0],start[1]*3+height - 20],[width, height*4])
-        self.portret_rect = pygame.Rect([self.other_ui_rect.left +texture.center_x(self.portret_size, self.other_ui_rect.size), self.other_ui_rect.top + round(self.portret_size[1] /2)], self.portret_size)
+        self.portret_rect = pygame.Rect([self.other_ui_rect.left +texture.center_x(self.portret_size, self.other_ui_rect.size), self.other_ui_rect.top + round(self.portret_size[1] /4)], self.portret_size)
         self.portret_underlay = self.portret_rect.move([-self.portret_underlay_gap, -self.portret_underlay_gap])
         self.portret_underlay.size = [self.portret_underlay.width + self.portret_underlay_gap*2, self.portret_underlay.height+self.portret_underlay_gap*2]
         self.portret_name_rect = self.portret_rect.move(0, self.portret_size[1]+20)
-
-
+        self.arrow_buttons = button.ButtonHandler([])
+        
+    
+        
+        arrow_buttons_size = [40,40]
+        arrow_buttons_gap = 18
+        self.arrow_buttons.buttons.append(button.TextButton(arrow_buttons_size, [self.portret_name_rect.left-arrow_buttons_gap-arrow_buttons_size[0], self.portret_name_rect.top] , Path(self.sound_pack + "click.wav"), "<", self.buttons_font, self.ui_text, self.ui_bg))
+        self.arrow_buttons.buttons.append(button.TextButton(arrow_buttons_size, [self.portret_name_rect.right+arrow_buttons_gap, self.portret_name_rect.top] , Path(self.sound_pack + "click.wav"), ">", self.buttons_font, self.ui_text, self.ui_bg))
+        
+        confirm_button_size = [150,35]
+        confirm_button_gap = 50
+        self.confirm_button = button.TextButton(confirm_button_size, [self.other_ui_rect.left +texture.center_x(confirm_button_size, self.other_ui_rect.size), self.portret_name_rect.top +  confirm_button_gap], Path(self.sound_pack + "click.wav"),"Confirm",self.buttons_font, self.ui_black, self.ui_white)
         
         self.PLAY_STATE = "PLAY"
         self.SETTINGS_STATE = "SETTINGS"
         self.ui_state = None
         
+        self.select_color = 0
 
         self.state_to_function = {self.MAIN_MENU_STATE: self.start_screen, self.INGAME_STATE: self.ingame}
 
@@ -101,7 +118,7 @@ class SceneManager():
         self.start_animator = texture.AnimationHandler()
 
         # Is [None,None,None] if player hasn't clicked this frame, else is click position on surface
-        self.click_pos = [None, None]
+        self.click_pos = [-1,-1]
         self.board_underlay_size = [40,40]
         self.board_underlay = pygame.Rect([self.board_gap_corner[0]- round(self.board_underlay_size[0]/2), self.board_gap_corner[1]- round(self.board_underlay_size[1]/2)],[(self.board.square_size[0] * 8) + self.board_underlay_size[0], (self.board.square_size[1] * 8)+self.board_underlay_size[1]])
     def start_screen(self):
@@ -122,17 +139,61 @@ class SceneManager():
         elif self.main_ui_buttons.buttons[2].pressed:
             self.quit()       
             
+    def update_arrow_buttons(self):
+        self.arrow_buttons.updates(self.click_pos)
+        if self.arrow_buttons.buttons[0].pressed == True:
+            self.arrow_buttons.buttons[0].pressed = False
+            self.player_index -= 1
+            if self.player_index <= -self.total_players:
+                self.player_index = 0
+            
+        if self.arrow_buttons.buttons[1].pressed == True:
+            self.arrow_buttons.buttons[1].pressed = False
+            self.player_index += 1
+            if self.player_index >= self.total_players:
+                self.player_index = 0
+    def update_confirm_button(self):
+        self.confirm_button.update(self.click_pos)
+        if self.confirm_button.pressed:
+            self.confirm_button.pressed = False
+            if self.ui_state == self.PLAY_STATE:
+                self.select_color += 1
+                if self.select_color > 1:
+                    self.select_color = 0
+                    self.ui_state = None
+                if self.select_color == piece.WHITE:
+                    self.confirm_button.change_font_color(self.ui_black)
+                    self.confirm_button.change_bg_color(self.ui_white)
+                    
+                
+                elif self.select_color == piece.BLACK:
+                    self.confirm_button.change_font_color(self.ui_white)
+                    self.confirm_button.change_bg_color(self.ui_black)
+                    
+    
+            
+                    
+            
+            
+            
     def draw_main_ui(self):
         self.main_ui_buttons.draws(self.surface)
         
         if self.ui_state == self.PLAY_STATE:
+            self.update_arrow_buttons()
+            self.update_confirm_button()
+            
             pygame.draw.rect(self.surface, self.ui_secondary, self.other_ui_rect)
             self.surface.blit(self.players[self.player_index].image, self.portret_rect)
             self.portret_name_rect.x =  self.other_ui_rect.left + texture.center_x(self.players[self.player_index].name_surf, self.other_ui_rect.size)
-            pygame.draw.rect(self.surface, self.ui_secondary, self.portret_underlay)
+            pygame.draw.rect(self.surface, self.ui_bg, self.portret_underlay)
             self.surface.blit(self.players[self.player_index].image, self.portret_rect)
-
             self.surface.blit(self.players[self.player_index].name_surf, self.portret_name_rect)
+            self.arrow_buttons.draws(self.surface)
+            self.confirm_button.draw(self.surface)
+            
+            
+
         
             
             
@@ -169,7 +230,7 @@ class SceneManager():
 
     def start(self):
         while True:
-            self.click_pos = [None, None]
+            self.click_pos =  [-1,-1]
             self.dt = time.time() - self.last_time
             self.last_time = time.time()
 
