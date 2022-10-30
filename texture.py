@@ -48,7 +48,7 @@ def get_slice(rect, image, colorkey=None):
     return surf
 
 
-
+# Class used to manage animations
 class AnimationHandler:
     def __init__(self):
         self.animations = []
@@ -121,8 +121,13 @@ class Animation:
     def get_current_image(self):
         return self.current_image
 
+
+
+"""
+Class representing a sort of texture pack for all pieces and the chess board
+"""
 class TexturePack:
-    def __init__(self, board, pieces):
+    def __init__(self, board: pygame.Surface, pieces: list[list[pygame.Surface]]):
         self.board = board
         self.pieces = pieces
 
@@ -136,10 +141,6 @@ class TexturePack:
 
 # Returns surface from square of image starting at position with size of square_size
 # NOTE: position is NOT muiltiplied by square_size
-
-
-
-
 # Path should be a string, or a Path object
 
 # Rules for basic:

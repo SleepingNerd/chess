@@ -5,7 +5,9 @@ from texture import center
 def convert_window_pos(pos, window_size, dest_size):
     return [round(pos[0] / (window_size[0] /dest_size[0])), round(pos[1] / (window_size[1] /dest_size[1]))]
 
+# Class used to group and manage muiltiple buttons into one object
 class ButtonHandler():
+    # buttons should be a list containing Button objects
     def __init__(self, buttons):
         self.buttons = buttons
     def updates(self, click_pos):
@@ -15,8 +17,8 @@ class ButtonHandler():
     def draws(self, dest):
         for button in self.buttons:
                 button.draw(dest)
-        
-            
+
+
 # Button class
 class Button:
     # Constructor,
@@ -33,7 +35,7 @@ class Button:
     # If click_pos overlaps with self.rect,
     # Invoke self.clicked_function, play self.sound and set self.clicked to true
     def update(self, click_pos):
-        
+
         # If click position and button rect overlap...
         if self.rect.collidepoint(click_pos):
             # Play self.sound
@@ -63,14 +65,14 @@ class TextButton(Button):
         self.font_color = font_color
         self.bg_color = bg_color
         self.redraw_button()
-        
-        
+
+
     def redraw_button(self):
         font_surf = self.font.render(self.text, self.antialiasing, self.font_color, self.bg_color)
         self.surf = pygame.Surface(self.rect.size)
         self.surf.fill(self.bg_color)
         self.surf.blit(font_surf, center(font_surf, self.rect.size))
-        
+
     def draw(self, dest):
         dest.blit(self.surf, self.rect)
     def change_font_color(self, color):
@@ -81,5 +83,3 @@ class TextButton(Button):
     def change_bg_color(self, color):
         self.bg_color = color
         self.redraw_button()
-
-

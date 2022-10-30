@@ -22,7 +22,7 @@ class SceneManager():
         self.config = load(config_f)
         config_f.close()
 
-        win = pygame.display.set_mode((0,0),pygame.FULLSCREEN)
+        win = pygame.display.set_mode((0,0))
         self.screen_resolution =  [win.get_width(), win.get_height()]
 
         self.win_size = self.screen_resolution
@@ -63,28 +63,28 @@ class SceneManager():
 
         self.title_font =   pygame.font.Font(Path("assets/fonts/Gamer.TTF"),50)
         self.buttons_font = pygame.font.Font(Path("assets/fonts/Gamer.TTF"),50)
-    
-        
+
+
         self.title_surface = self.title_font.render(self.config["title_text"], False, self.ui_text)
         self.title_pos = [texture.center_x(self.title_surface, self.surface_size), 20]
-        
+
         self.sound_pack = "assets/sounds/" + self.config["sound_pack"] +"/"
         buttons = ["Play", "Settings", "Exit"]
         self.main_ui_buttons = button.ButtonHandler([])
         start = [35, self.board_gap_corner[1]+5]
         self.portrets = "assets/images/ui/portrets/"+self.config["portrets"]+"/"
-        
+
         self.portret_size = [75,75]
         self.players = [player.Player(self.portrets + "player.png", self.portret_size, "Player", self.buttons_font, self.ui_text), player.Player(self.portrets + "bot.png", self.portret_size, "Bot", self.buttons_font, self.ui_text),player.Player(self.portrets + "bot.png", self.portret_size, "I", self.buttons_font, self.ui_text),player.Player(self.portrets + "bot.png", self.portret_size, "Don't", self.buttons_font, self.ui_text),player.Player(self.portrets + "bot.png", self.portret_size, "Care", self.buttons_font, self.ui_text),player.Player(self.portrets + "bot.png", self.portret_size, "bozo", self.buttons_font, self.ui_text)]
         self.player_index = 0
         self.total_players = len(self.players)
-        
+
         height = 50
         width = 200
-        gap = 5 + height 
+        gap = 5 + height
         for y in range (0,3):
-            self.main_ui_buttons.buttons.append( button.TextButton([width,height], [start[0],start[1] + gap * y],Path(self.sound_pack + "click.wav"), buttons[y], self.buttons_font, self.ui_text, self.ui_secondary)) 
-            
+            self.main_ui_buttons.buttons.append( button.TextButton([width,height], [start[0],start[1] + gap * y],Path(self.sound_pack + "click.wav"), buttons[y], self.buttons_font, self.ui_text, self.ui_secondary))
+
         self.portret_underlay_gap = 10
         self.other_ui_rect = pygame.Rect([start[0],start[1]*3+height - 20],[width, height*4])
         self.portret_rect = pygame.Rect([self.other_ui_rect.left +texture.center_x(self.portret_size, self.other_ui_rect.size), self.other_ui_rect.top + round(self.portret_size[1] /4)], self.portret_size)
@@ -92,22 +92,22 @@ class SceneManager():
         self.portret_underlay.size = [self.portret_underlay.width + self.portret_underlay_gap*2, self.portret_underlay.height+self.portret_underlay_gap*2]
         self.portret_name_rect = self.portret_rect.move(0, self.portret_size[1]+20)
         self.arrow_buttons = button.ButtonHandler([])
-        
-    
-        
+
+
+
         arrow_buttons_size = [40,40]
         arrow_buttons_gap = 18
         self.arrow_buttons.buttons.append(button.TextButton(arrow_buttons_size, [self.portret_name_rect.left-arrow_buttons_gap-arrow_buttons_size[0], self.portret_name_rect.top] , Path(self.sound_pack + "click.wav"), "<", self.buttons_font, self.ui_text, self.ui_bg))
         self.arrow_buttons.buttons.append(button.TextButton(arrow_buttons_size, [self.portret_name_rect.right+arrow_buttons_gap, self.portret_name_rect.top] , Path(self.sound_pack + "click.wav"), ">", self.buttons_font, self.ui_text, self.ui_bg))
-        
+
         confirm_button_size = [150,35]
         confirm_button_gap = 50
         self.confirm_button = button.TextButton(confirm_button_size, [self.other_ui_rect.left +texture.center_x(confirm_button_size, self.other_ui_rect.size), self.portret_name_rect.top +  confirm_button_gap], Path(self.sound_pack + "click.wav"),"Confirm",self.buttons_font, self.ui_black, self.ui_white)
-        
+
         self.PLAY_STATE = "PLAY"
         self.SETTINGS_STATE = "SETTINGS"
         self.ui_state = None
-        
+
         self.select_color = 0
 
         self.state_to_function = {self.MAIN_MENU_STATE: self.start_screen, self.INGAME_STATE: self.ingame}
@@ -130,15 +130,15 @@ class SceneManager():
         # Play pressed:
         if self.main_ui_buttons.buttons[0].pressed:
             self.main_ui_buttons.buttons[0].pressed = False
-            self.ui_state = self.PLAY_STATE 
+            self.ui_state = self.PLAY_STATE
         # Settings pressed:
         elif self.main_ui_buttons.buttons[1].pressed:
             self.main_ui_buttons.buttons[1].pressed = False
-            self.ui_state = self.SETTINGS_STATE        
+            self.ui_state = self.SETTINGS_STATE
         # Exit
         elif self.main_ui_buttons.buttons[2].pressed:
-            self.quit()       
-            
+            self.quit()
+
     def update_arrow_buttons(self):
         self.arrow_buttons.updates(self.click_pos)
         if self.arrow_buttons.buttons[0].pressed == True:
@@ -146,7 +146,7 @@ class SceneManager():
             self.player_index -= 1
             if self.player_index <= -self.total_players:
                 self.player_index = 0
-            
+
         if self.arrow_buttons.buttons[1].pressed == True:
             self.arrow_buttons.buttons[1].pressed = False
             self.player_index += 1
@@ -164,25 +164,25 @@ class SceneManager():
                 if self.select_color == piece.WHITE:
                     self.confirm_button.change_font_color(self.ui_black)
                     self.confirm_button.change_bg_color(self.ui_white)
-                    
-                
+
+
                 elif self.select_color == piece.BLACK:
                     self.confirm_button.change_font_color(self.ui_white)
                     self.confirm_button.change_bg_color(self.ui_black)
-                    
-    
-            
-                    
-            
-            
-            
+
+
+
+
+
+
+
     def draw_main_ui(self):
         self.main_ui_buttons.draws(self.surface)
-        
+
         if self.ui_state == self.PLAY_STATE:
             self.update_arrow_buttons()
             self.update_confirm_button()
-            
+
             pygame.draw.rect(self.surface, self.ui_secondary, self.other_ui_rect)
             self.surface.blit(self.players[self.player_index].image, self.portret_rect)
             self.portret_name_rect.x =  self.other_ui_rect.left + texture.center_x(self.players[self.player_index].name_surf, self.other_ui_rect.size)
@@ -191,35 +191,35 @@ class SceneManager():
             self.surface.blit(self.players[self.player_index].name_surf, self.portret_name_rect)
             self.arrow_buttons.draws(self.surface)
             self.confirm_button.draw(self.surface)
-            
-            
 
-        
-            
-            
+
+
+
+
+
         elif self.ui_state == self.SETTINGS_STATE:
             pass
-            
-    
+
+
     def ingame(self):
         self.main_ui_buttons.updates(self.click_pos)
-        
+
         self.update_main_ui()
-        
-            
-        
-        
-        
+
+
+
+
+
         # Drawing loop
         self.surface.fill(self.ui_bg)
         pygame.draw.rect(self.surface, self.ui_secondary, self.board_underlay)
         self.board.draw(self.surface, ((self.board_gap_corner, self.board_gap_corner)))
         self.surface.blit(self.title_surface, self.title_pos)
         self.draw_main_ui()
-        
-        
-        
-        
+
+
+
+
 
     def update(self):
         self.state_to_function[self.state]()
@@ -240,7 +240,7 @@ class SceneManager():
                 elif event.type == pygame.MOUSEBUTTONUP:
                     if event.button == 1:
                         self.click_pos = button.convert_window_pos(event.pos, self.win_size, self.surface_size)
-                        
+
 
             self.update()
             self.screen_to_window()
@@ -248,4 +248,3 @@ class SceneManager():
     def quit(self):
         pygame.quit()
         sys.exit()
-        
