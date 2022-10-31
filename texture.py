@@ -1,3 +1,6 @@
+"""
+Provides functions and classes which provide easier interaction with animations, and textures
+"""
 import pygame
 from pathlib import Path
 
@@ -5,6 +8,7 @@ from pathlib import Path
 COMPLEX_HEADER = '+'
 
 def center_x(surface, dest_size):
+    ""
     if isinstance(surface, pygame.Surface):
         surface = surface.get_size()
     return round((dest_size[0] / 2) - (surface[0] / 2))
@@ -15,26 +19,16 @@ def center_y(surface, dest_size):
 def center(surface, dest_size):
     return [center_x(surface, dest_size), center_y(surface,dest_size)]
 
-def load_and_scale(path, scale):
-    pygame.transform.scale(pygame.image.load(path), scale)
-
-def load_and_scale_animation(path, frames, scale):
-    image = pygame.image.load(Path(path)).convert_alpha()
-    width = image.get_width()
-    height = image.get_height()
-
-    step = round(width / frames)
-    animation = []
-    for offset in range(0, width, step):
-        surface = pygame.transform.scale(get_slice(pygame.Rect((offset, 0), (step, height)), image), scale)
-        animation.append(surface)
-    return animation
-
+def load_and_scale(fileobj, scale: tuple[int, int]) -> pygame.Surface:
+    """
+    Returns a scaled surface from fileobj
+    """
+    return pygame.transform.scale(pygame.image.load(fileobj), scale)
 
 def get_slice(rect: pygame.Rect, image: pygame.Surface, colorkey: tuple[int, int, int] = None) -> pygame.Surface:
     """
-        Returns sliced rect from image as an alpha surface,
-        and colorkeys it (if a colorkey has been specified)
+    Returns sliced rect from image as an alpha surface,
+    and colorkeys it if specified (by colorkey not being None)
     """
     # Create empty alpha surface, of rect.size
     surf = pygame.Surface(rect.size).convert_alpha()
@@ -50,10 +44,11 @@ def get_slice(rect: pygame.Rect, image: pygame.Surface, colorkey: tuple[int, int
     # Return resulting surface
     return surf
 
-"""
-Class representing a "texture pack" for all pieces and the chess board
-"""
+
 class TexturePack:
+    """
+    Class representing a "texture pack" for all pieces and the chess board
+    """
     def __init__(self, board: pygame.Surface, pieces: list[list[pygame.Surface]]):
         self.board = board
         self.pieces = pieces
@@ -231,3 +226,15 @@ class Animation:
 
     def get_current_image(self):
         return self.current_image
+
+def load_and_scale_animation(path, frames, scale):
+    image = pygame.image.load(Path(path)).convert_alpha()
+    width = image.get_width()
+    height = image.get_height()
+
+    step = round(width / frames)
+    animation = []
+    for offset in range(0, width, step):
+        surface = pygame.transform.scale(get_slice(pygame.Rect((offset, 0), (step, height)), image), scale)
+        animation.append(surface)
+    return animation
