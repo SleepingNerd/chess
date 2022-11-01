@@ -19,8 +19,12 @@ KING = 4
 PAWN = 5
 EMPTY = 0
 
-COLOR_TO_WORD = ["White", "Black"]
+# Constants to represent 
 
+COLOR_TO_WORD = ["White", "Black"]
+CH_TO_CASTLES = {"Q":[WHITE, 0],"K":[WHITE, 1], "q":[BLACK, 0], "k":[BLACK, 1]}
 CH_TO_PIECE = {"p": Piece(BLACK, PAWN), "r": Piece(BLACK, ROOK), "n": Piece(BLACK, KNIGHT), "b": Piece(BLACK, BISHOP), "k": Piece(BLACK, KING), "q": Piece(
     BLACK, QUEEN), "P": Piece(WHITE, PAWN), "R": Piece(WHITE, ROOK), "N": Piece(WHITE, KNIGHT),  "B": Piece(WHITE, BISHOP),  "K": Piece(WHITE, KING), "Q": Piece(WHITE, QUEEN)}
 CH_TO_COLOR = {"w": WHITE, "b": BLACK}
+
+CH_TO_INDEX = {"a":7 , "b": 6, "c" : 5, "d" : 4, "e" : 3, "f" : 2, "g" : 1, "h": 0}
