@@ -29,7 +29,9 @@ class Board():
 
     def draw(self, dest, pos):
         self.surface.blit(self.texture_pack.board, (0,0))
-        
+
+        print(engine.get_moves(self.board_data))
+
 
         for y in range(0, len(self.board_data.board[0])):
             for x in range(0, len(self.board_data.board[1])):
@@ -39,8 +41,3 @@ class Board():
 
 
         dest.blit(self.surface, pos)
-
-
-
-
-    

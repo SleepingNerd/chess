@@ -76,15 +76,16 @@ class Move():
     def __init__(self, origin: Coordinate, dest:Coordinate):
         self.origin = origin
         self.dest   = dest
-class AddPiece()
 
-class RemovePiece()
+class Replace():
+    def __init__(self, dest:Coordinate, dest_piece: piece.Piece):
+        self.dest   = dest
+        self.piece = dest_piece
 
-class ReplacePiece
 
 # For bishop, bishop, and maybe pawn
-def get_linear_moves(board_data: BoardData, cord: Coordinate) -> List[Move]:
-    movements = piece.PIECE_TO_MOVEMENT[board_data[cord.y][cord.x]]
+def get_linear_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
+    movements = piece.PIECE_TO_MOVEMENT[board_data.board[cord.y][cord.x].type]
     moves = []
 
     # God forgive me for this
@@ -93,43 +94,68 @@ def get_linear_moves(board_data: BoardData, cord: Coordinate) -> List[Move]:
             for i in range(-1, 2, 2):
                 for j in range(-1, 2, 2):
                     for y in range(1, 8):
-                        y = cord.y+movement[index]*y*i
-                        if y < 0 or y > 7:
+                        y_cord = cord.y+movement[index]*y*i
+                        if y_cord < 0 or y_cord > 7:
                             break
 
                         for x in range(1, 8):
-                            x = cord.y+movement[1-index]*x*j
-                            if x < 0 or x > 7:
+                            x_cord = cord.y+movement[1-index]*x*j
+                            if x_cord < 0 or x_cord > 7:
                                 break
 
-                            if BoardData[y][x] != piece.EMPTY:
-                                if BoardData[y][x].color == board_data.active:
+                            if board_data.board[y_cord][x_cord] != piece.EMPTY:
+                                if board_data.board[y_cord][x_cord].color == board_data.active:
                                     y = 100
                                     break
 
-                            moves.append()
+                            moves.append(Move(cord, Coordinate(y_cord, x_cord)))
+    return moves
 
-# Pawn, horse, king
-def get_singular_moves():
-    pass
+#  Horse, king
+def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
+    movements = piece.PIECE_TO_MOVEMENT[board_data.board[cord.y][cord.x].type]
+    moves = []
+
+    for movement in movements:
+        for index in range(0, 2):
+            for i in range(-1, 2, 2):
+                for j in range(-1, 2, 2):
+                    y = cord.y+movement[index]*i
+                    if y < 0 or y > 7:
+                        continue
+                    x = cord.y+movement[1-index]*j
+                    if x < 0 or x > 7:
+                        continue
+
+                    if board_data.board[y][x] != piece.EMPTY:
+                        if board_data.board[y][x].color == board_data.active:
+                            continue
+                    moves.append(Move(cord, Coordinate(y, x)))
+    return moves
+
+
+
+
 
 
 def get_moves(board_data: BoardData):
+    moves = []
     # First of all check if the king is in check
 
 
     # Iterate through all pieces from the active color
     for y in range(0, len(board_data.board[0])):
             for x in range(0, len(board_data.board[1])):
-                # If piece is of active color
-                if board_data.board[y][x].color == board_data.active:
-                    # If piece is of linear movement type
-                    if  board_data.board[y][x].piece in piece.LINEAR_MOVERS:
-                        get_linear_moves()
+                if board_data.board[y][x] != piece.EMPTY:
+                    # If piece is of active color
+                    if board_data.board[y][x].color == board_data.active:
+                        # If piece is of linear movement type
+                        if  board_data.board[y][x].type in piece.LINEAR_MOVERS:
+                            moves.append(get_linear_moves(board_data, Coordinate(y, x)))
 
-
-                    # If piece is of singular movement type
-                    elif board_data.board[y][x].piece in piece.SINGULAR_MOVERS:
+                        # If piece is of singular movement type
+                        elif board_data.board[y][x].type in piece.SINGULAR_MOVERS:
+                            moves.append(get_singular_moves(board_data, Coordinate(y, x)))
 
 
 
@@ -140,3 +166,4 @@ def get_moves(board_data: BoardData):
     # Check for en passants (and cancels them out if it results in a check afterwards)
 
     # Check for promotions, and double pawn movements (and cancels them out if it results in a check afterwards)
+    return moves

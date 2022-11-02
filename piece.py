@@ -30,6 +30,6 @@ CH_TO_COLOR = {"w": WHITE, "b": BLACK}
 
 CH_TO_INDEX = {"a":0 , "b": 1, "c" : 2, "d" : 3, "e" : 4, "f" : 5, "g" : 6, "h": 7}
 
-PIECE_TO_MOVEMENT = {ROOK: [[1, 0]], KNIGHT: [2, 1], BISHOP: [[1,1]], QUEEN:[[1, 0], [1,1]], KING: [[1, 0], [1,1]] , PAWN:[[1,0]]}
+PIECE_TO_MOVEMENT = {ROOK: [[1, 0]], KNIGHT: [[2, 1]], BISHOP: [[1,1]], QUEEN:[[1, 0], [1,1]], KING: [[1, 0], [1,1]] , PAWN:[[1,0]]}
 LINEAR_MOVERS = [ROOK, BISHOP, QUEEN]
 SINGULAR_MOVERS = [KING, KNIGHT]
