@@ -7,5 +7,5 @@ class Player():
 
 
 class Human(Player):
-    def move(click_pos):
+    def move(board_data, done_move):
         pass

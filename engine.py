@@ -1,5 +1,5 @@
 import piece
-
+import copy
 
 class BoardData():
     """
@@ -134,6 +134,33 @@ def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
     return moves
 
 
+def apply_move(board_data: BoardData, move) -> BoardData:
+    temp = copy.deepcopy(board_data)
+
+    if isinstance(move, Move):
+        temp.board[move.dest.y][move.dest.x] = temp.board[move.origin.y][move.origin.x]
+        temp.board[move.origin.y][move.origin.x] = piece.EMPTY
+    elif isinstance(move, Replace):
+        pass
+    return temp
+
+
+def in_check(board_data: BoardData, color) -> bool:
+    "Returns true, if color's king is in check"
+    position = None
+    # Find king
+    for y in range(0, 7):
+        for x in range(0, 7):
+            if board_data.board[y][x].type == piece.KING and board_data.board[y][x].color == color:
+                position = Coordinate(y, x)
+    # Ah man
+
+
+
+
+
+
+
 
 
 
@@ -145,21 +172,19 @@ def get_moves(board_data: BoardData):
 
     # Iterate through all pieces from the active color
     for y in range(0, len(board_data.board[0])):
+
             for x in range(0, len(board_data.board[1])):
                 if board_data.board[y][x] != piece.EMPTY:
                     # If piece is of active color
                     if board_data.board[y][x].color == board_data.active:
                         # If piece is of linear movement type
                         if  board_data.board[y][x].type in piece.LINEAR_MOVERS:
-                            moves.append(get_linear_moves(board_data, Coordinate(y, x)))
+                            if in_check(apply_move(board_data), color)
+                                moves.append(get_linear_moves(board_data, Coordinate(y, x)))
 
                         # If piece is of singular movement type
                         elif board_data.board[y][x].type in piece.SINGULAR_MOVERS:
                             moves.append(get_singular_moves(board_data, Coordinate(y, x)))
-
-
-
-        # Collect all "Basic moves", and check if they result in check for the active piece's king (also deals with checks incflicted before the move)
 
     # Check for castles (or skips if king was in check)
 
