@@ -2,8 +2,9 @@ import pygame
 from texture import center
 
 # Converts pos on window_size (or really just any size) to a pos on dest_size
-def convert_window_pos(pos, window_size, dest_size):
+def convert_window_pos(pos : tuple[int, int], window_size, dest_size):
     return [round(pos[0] / (window_size[0] /dest_size[0])), round(pos[1] / (window_size[1] /dest_size[1]))]
+
 
 # Class used to group and manage muiltiple buttons into one object
 class ButtonHandler():

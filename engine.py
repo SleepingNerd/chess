@@ -1,6 +1,21 @@
 import piece
 import copy
 
+class Coordinate():
+    def __init__(self, y, x):
+        self.y = y
+        self.x = x
+
+class Move():
+    def __init__(self, origin: Coordinate, dest:Coordinate):
+        self.origin = origin
+        self.dest   = dest
+
+class Replace():
+    def __init__(self, dest:Coordinate, dest_piece: piece.Piece):
+        self.dest   = dest
+        self.piece = dest_piece
+
 class BoardData():
     """
     Represents all data of a chess board
@@ -22,6 +37,8 @@ class BoardData():
         self.castles = [[False, False], [False, False]]
         self.en_passant = None
         self.halfmoves = 0
+    def apply_move(self, move: Move):
+        self = apply_move(self, move)
 
 def readfen(fen: str) -> BoardData:
     """
@@ -67,20 +84,6 @@ def readfen(fen: str) -> BoardData:
     #
     return board_data
 
-class Coordinate():
-    def __init__(self, y, x):
-        self.y = y
-        self.x = x
-
-class Move():
-    def __init__(self, origin: Coordinate, dest:Coordinate):
-        self.origin = origin
-        self.dest   = dest
-
-class Replace():
-    def __init__(self, dest:Coordinate, dest_piece: piece.Piece):
-        self.dest   = dest
-        self.piece = dest_piece
 
 
 # For bishop, bishop, and maybe pawn
@@ -110,6 +113,18 @@ def get_linear_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
 
                             moves.append(Move(cord, Coordinate(y_cord, x_cord)))
     return moves
+
+def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Move]:
+    # If piece is of linear movement type
+    if  board_data.board[pos.y][pos.x].type in piece.LINEAR_MOVERS:
+
+        moves.append(get_linear_moves(board_data, Coordinate(pos.y, pos.x)))
+
+    # If piece is of singular movement type
+    elif board_data.board[pos.y][pos.x].type in piece.SINGULAR_MOVERS:
+            moves.append(get_singular_moves(board_data, Coordinate(pos.y, pos.x)))
+
+
 
 #  Horse, king
 def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
@@ -143,6 +158,18 @@ def apply_move(board_data: BoardData, move) -> BoardData:
     elif isinstance(move, Replace):
         pass
     return temp
+def is_move_legal(board_data: BoardData, move: Move):
+    if board_data[move.origin.y][move.origin.x] in piece.LINEAR_MOVERS:
+        if move in get_linear_moves(board_data, cord):
+            return True
+
+
+    elif board_data[move.origin.y][move.origin.x] in piece.SINGULAR_MOVERS:
+        pass
+    return False
+
+
+
 
 
 def in_check(board_data: BoardData, color) -> bool:
@@ -154,6 +181,7 @@ def in_check(board_data: BoardData, color) -> bool:
             if board_data.board[y][x].type == piece.KING and board_data.board[y][x].color == color:
                 position = Coordinate(y, x)
     # Ah man
+
 
 
 
@@ -177,14 +205,8 @@ def get_moves(board_data: BoardData):
                 if board_data.board[y][x] != piece.EMPTY:
                     # If piece is of active color
                     if board_data.board[y][x].color == board_data.active:
-                        # If piece is of linear movement type
-                        if  board_data.board[y][x].type in piece.LINEAR_MOVERS:
-                            if in_check(apply_move(board_data), color)
-                                moves.append(get_linear_moves(board_data, Coordinate(y, x)))
+                        pass
 
-                        # If piece is of singular movement type
-                        elif board_data.board[y][x].type in piece.SINGULAR_MOVERS:
-                            moves.append(get_singular_moves(board_data, Coordinate(y, x)))
 
     # Check for castles (or skips if king was in check)
 

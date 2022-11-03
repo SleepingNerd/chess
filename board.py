@@ -2,6 +2,7 @@ import pygame
 import piece
 import texture
 import engine
+from typing import Optional
 
 # path
 class Board():
@@ -10,6 +11,9 @@ class Board():
         self.surface = pygame.Surface([square_size[0] * 8, square_size[1] * 8])
         self.load_texture_pack(texture_pack)
         self.board_data = engine.BoardData()
+        self.selected_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
+        self.selected_overlay.fill((100, 200, 100, 200))
+
 
     # Loads texture pack and scales to self.square_size
     def load_texture_pack(self, texture_pack):
@@ -27,8 +31,14 @@ class Board():
     def loadfen(self, fen):
         self.board_data = engine.readfen(fen)
 
-    def draw(self, dest, pos):
+    def draw(self, dest, pos, selected : Optional[list[engine.Coordinate]] = None):
         self.surface.blit(self.texture_pack.board, (0,0))
+
+        if selected != None:
+            for selected in selected:
+                self.surface.blit(self.selected_overlay, (selected.x * self.square_size[0], selected.y * self.square_size[1]))
+
+
 
 
         for y in range(0, len(self.board_data.board[0])):
