@@ -50,7 +50,13 @@ class BoardData():
         self.en_passant = None
         self.halfmoves = 0
     def apply_move(self, move: Move):
-        self = apply_move(self, move)
+        if isinstance(move, Move):
+            self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
+            self.board[move.origin.y][move.origin.x] = piece.EMPTY
+        elif isinstance(move, Replace):
+            pass
+       
+        self.active = piece.ACTIVE_TO_INACTIVE[self.active]
 
 def readfen(fen: str) -> BoardData:
     """
@@ -153,19 +159,24 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
             
     # If piece is a pawn
     elif board_data.board[pos.y][pos.x].type == piece.PAWN:
+        target_y = pos.y+piece.PAWN_MOVEMENT[board_data.active][0] 
+        # If he can move forward
+        if board_data.board[target_y][pos.x] == piece.EMPTY:
+            moves.append(Coordinate(target_y, pos.x))
+            # If he can double hop
+            if pos.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
+                target_cord = Coordinate(pos.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], pos.x)
+                if board_data.board[target_cord.y][target_cord.x]== piece.EMPTY:
+                    moves.append(target_cord)
+        # If he can capture left
+
         
-        
-        
-        # If he can double hop
-        if pos.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
-            dest = Coordinate(pos.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], pos.x+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][1])
-            blocked_state = is_blocked(board_data, Move(pos, dest), piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active])
-            # If the double hop would'nt be blocked
-            if blocked_state < 3:
-                moves.append(dest)
+                    
+                    
+            
                 
-                
-                
+                    
+                    
             
             
 
@@ -182,13 +193,9 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
 
 def apply_move(board_data: BoardData, move) -> BoardData:
     temp = copy.deepcopy(board_data)
-
-    if isinstance(move, Move):
-        temp.board[move.dest.y][move.dest.x] = temp.board[move.origin.y][move.origin.x]
-        temp.board[move.origin.y][move.origin.x] = piece.EMPTY
-    elif isinstance(move, Replace):
-        pass
+    temp.apply_move(move)
     return temp
+
 def is_move_legal(board_data: BoardData, move: Move):
     if board_data[move.origin.y][move.origin.x] in piece.LINEAR_MOVERS:
         if move in get_linear_moves(board_data, cord):
