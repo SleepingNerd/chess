@@ -11,7 +11,7 @@ def flatten( twodlist) -> list:
         else:
             result.append(lis)
     return result
-    
+
 
 class Coordinate():
     def __init__(self, y, x):
@@ -55,7 +55,7 @@ class BoardData():
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
         elif isinstance(move, Replace):
             pass
-       
+
         self.active = piece.ACTIVE_TO_INACTIVE[self.active]
 
 def readfen(fen: str) -> BoardData:
@@ -89,8 +89,9 @@ def readfen(fen: str) -> BoardData:
 
     # Castles right
     for ch in fen[2]:
-        i = piece.CH_TO_CASTLES[ch]
-        board_data.castles[i[0]][i[1]] = True
+        if ch != '-':
+            i = piece.CH_TO_CASTLES[ch]
+            board_data.castles[i[0]][i[1]] = True
 
     # If there's a possible en passant target
     if fen[3] != '-':
@@ -112,9 +113,9 @@ def get_linear_moves(board_data: BoardData, cord: Coordinate) -> list[Coordinate
 def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
     return []
 
-# Checks if a move is blocked (by a other piece) 
+# Checks if a move is blocked (by a other piece)
 def is_blocked(board_data: BoardData, move: Move, moving_pattern: tuple[int, int]):
-    # Keep applying moving_pattern until active or non active piece is 
+    # Keep applying moving_pattern until active or non active piece is
     for y in range(move.origin.y+moving_pattern[0], move.dest.y+1, moving_pattern[0]):
         #
         for x in range(move.origin.y+moving_pattern[1], move.dest.x+1, moving_pattern[1]):
@@ -122,29 +123,41 @@ def is_blocked(board_data: BoardData, move: Move, moving_pattern: tuple[int, int
                 # If piece is blocked by an active color
                 if board_data.board[y][x].color == board_data.active:
                     return piece.BLOCKED_BY_ACTIVE
-                # Elif piece is blocked by an inactive color 
+                # Elif piece is blocked by an inactive color
                 elif board_data.board[y][x].color == board_data.active:
                     if y == move.dest.y and x == move.dest.x:
                         return piece.CAPTURE
-                    else: 
+                    else:
                         return piece.BLOCKED_BY_INACTIVE
             else:
                 if y == move.dest.y and x == move.dest.x:
                         return piece.NOT_BLOCKED
-                    
-                
-    
+
+
+
     # If it was impossible for that move to happen
     return piece.MOVING_PATTERN_MISTAKE
-                 
 
-        
-        
 
-    
 
-    
-    
+
+def on_board(x: int) -> bool:
+    if x < 0 or x >7:
+        return False
+    return True
+
+# Returns True if pos, is a piece not of active color
+def is_capture(board_data: BoardData, pos: Coordinate):
+    try:
+        if board_data.board[pos.y][pos.x] != piece.EMPTY:
+            if board_data.board[pos.y][pos.x].color != board_data.active:
+                return True
+    except IndexError:
+        pass
+    return False
+
+
+
 
 def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     moves = []
@@ -156,10 +169,11 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     # If piece is of singular movement type
     elif board_data.board[pos.y][pos.x].type in piece.SINGULAR_MOVERS:
         moves.append(get_singular_moves(board_data, Coordinate(pos.y, pos.x)))
-            
+
     # If piece is a pawn
     elif board_data.board[pos.y][pos.x].type == piece.PAWN:
-        target_y = pos.y+piece.PAWN_MOVEMENT[board_data.active][0] 
+        target_y = pos.y+piece.PAWN_MOVEMENT[board_data.active][0]
+
         # If he can move forward
         if board_data.board[target_y][pos.x] == piece.EMPTY:
             moves.append(Coordinate(target_y, pos.x))
@@ -169,23 +183,20 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
                 if board_data.board[target_cord.y][target_cord.x]== piece.EMPTY:
                     moves.append(target_cord)
         # If he can capture left
+        if is_capture(board_data, Coordinate(target_y, pos.x+1)):
+            moves.append(Coordinate(target_y, pos.x + 1))
 
-        
-                    
-                    
-            
-                
-                    
-                    
-            
-            
+
+        elif is_capture(board_data, Coordinate(target_y, pos.x-1)):
+            moves.append(Coordinate(target_y, pos.x - 1))
+
 
     # Castles
     else:
         pass
-    
+
     return flatten(moves)
-        
+
 
 
 
