@@ -13,6 +13,9 @@ class Board():
         self.board_data = engine.BoardData()
         self.selected_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
         self.selected_overlay.fill((100, 200, 100, 200))
+        self.legal_move_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
+        pygame.draw.circle(self.legal_move_overlay, (100, 200, 100, 200), [round(self.square_size[0]/2), round(self.square_size[1]/2)], 5,5)
+
 
 
     # Loads texture pack and scales to self.square_size
@@ -31,12 +34,14 @@ class Board():
     def loadfen(self, fen):
         self.board_data = engine.readfen(fen)
 
-    def draw(self, dest, pos, selected : Optional[list[engine.Coordinate]] = None):
+    def draw(self, dest, pos, selected : Optional[list[engine.Coordinate]] = None, legal_moves : list[engine.Coordinate] = []):
         self.surface.blit(self.texture_pack.board, (0,0))
 
         if selected != None:
             for selected in selected:
                 self.surface.blit(self.selected_overlay, (selected.x * self.square_size[0], selected.y * self.square_size[1]))
+        for cord in legal_moves:
+            self.surface.blit(self.legal_move_overlay, (cord.x * self.square_size[0], cord.y * self.square_size[1]))
 
 
 

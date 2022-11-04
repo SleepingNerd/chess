@@ -234,11 +234,13 @@ class SceneManager():
         pygame.draw.rect(self.surface, self.ui_secondary, self.board_underlay)
 
         selected = None
+        legal_moves = []
         if isinstance(self.active_players[self.board.board_data.active], player.Human):
             if self.active_players[self.board.board_data.active].selected != None:
                 selected = [self.active_players[self.board.board_data.active].selected]
+            legal_moves = self.active_players[self.board.board_data.active].legal_moves
 
-        self.board.draw(self.surface, ((self.board_offset, self.board_offset)), selected)
+        self.board.draw(self.surface, ((self.board_offset, self.board_offset)), selected, legal_moves)
         self.surface.blit(self.title_surface, self.title_pos)
         self.draw_main_ui()
 

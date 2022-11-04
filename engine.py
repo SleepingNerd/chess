@@ -1,6 +1,18 @@
 import piece
 import copy
 
+def flatten( twodlist) -> list:
+    result = []
+    for lis in twodlist:
+        # If "list" object can return an iterable
+        if hasattr(lis, '__iter__'):
+            for value in lis:
+                result.append(value)
+        else:
+            result.append(lis)
+    return result
+    
+
 class Coordinate():
     def __init__(self, y, x):
         self.y = y
@@ -86,35 +98,50 @@ def readfen(fen: str) -> BoardData:
 
 
 
-# For bishop, bishop, and maybe pawn
-def get_linear_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
-    movements = piece.PIECE_TO_MOVEMENT[board_data.board[cord.y][cord.x].type]
+# For bishop, king (not castles tho), queen, rook
+def get_linear_moves(board_data: BoardData, cord: Coordinate) -> list[Coordinate]:
+    return []
+
+#  Horse, king
+def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
+    return []
+
+# Checks if a move is blocked (by a other piece) 
+def is_blocked(board_data: BoardData, move: Move, moving_pattern: tuple[int, int]):
+    # Keep applying moving_pattern until active or non active piece is 
+    for y in range(move.origin.y+moving_pattern[0], move.dest.y+1, moving_pattern[0]):
+        #
+        for x in range(move.origin.y+moving_pattern[1], move.dest.x+1, moving_pattern[1]):
+            if board_data.board[y][x] != piece.EMPTY:
+                # If piece is blocked by an active color
+                if board_data.board[y][x].color == board_data.active:
+                    return piece.BLOCKED_BY_ACTIVE
+                # Elif piece is blocked by an inactive color 
+                elif board_data.board[y][x].color == board_data.active:
+                    if y == move.dest.y and x == move.dest.x:
+                        return piece.CAPTURE
+                    else: 
+                        return piece.BLOCKED_BY_INACTIVE
+            else:
+                if y == move.dest.y and x == move.dest.x:
+                        return piece.NOT_BLOCKED
+                    
+                
+    
+    # If it was impossible for that move to happen
+    return piece.MOVING_PATTERN_MISTAKE
+                 
+
+        
+        
+
+    
+
+    
+    
+
+def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     moves = []
-
-    # God forgive me for this
-    for movement in movements:
-        for index in range(0, 2):
-            for i in range(-1, 2, 2):
-                for j in range(-1, 2, 2):
-                    for y in range(1, 8):
-                        y_cord = cord.y+movement[index]*y*i
-                        if y_cord < 0 or y_cord > 7:
-                            break
-
-                        for x in range(1, 8):
-                            x_cord = cord.y+movement[1-index]*x*j
-                            if x_cord < 0 or x_cord > 7:
-                                break
-
-                            if board_data.board[y_cord][x_cord] != piece.EMPTY:
-                                if board_data.board[y_cord][x_cord].color == board_data.active:
-                                    y = 100
-                                    break
-
-                            moves.append(Move(cord, Coordinate(y_cord, x_cord)))
-    return moves
-
-def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Move]:
     # If piece is of linear movement type
     if  board_data.board[pos.y][pos.x].type in piece.LINEAR_MOVERS:
 
@@ -122,31 +149,35 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Move]:
 
     # If piece is of singular movement type
     elif board_data.board[pos.y][pos.x].type in piece.SINGULAR_MOVERS:
-            moves.append(get_singular_moves(board_data, Coordinate(pos.y, pos.x)))
+        moves.append(get_singular_moves(board_data, Coordinate(pos.y, pos.x)))
+            
+    # If piece is a pawn
+    elif board_data.board[pos.y][pos.x].type == piece.PAWN:
+        
+        
+        
+        # If he can double hop
+        if pos.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
+            dest = Coordinate(pos.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], pos.x+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][1])
+            blocked_state = is_blocked(board_data, Move(pos, dest), piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active])
+            # If the double hop would'nt be blocked
+            if blocked_state < 3:
+                moves.append(dest)
+                
+                
+                
+            
+            
+
+    # Castles
+    else:
+        pass
+    
+    return flatten(moves)
+        
 
 
 
-#  Horse, king
-def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
-    movements = piece.PIECE_TO_MOVEMENT[board_data.board[cord.y][cord.x].type]
-    moves = []
-
-    for movement in movements:
-        for index in range(0, 2):
-            for i in range(-1, 2, 2):
-                for j in range(-1, 2, 2):
-                    y = cord.y+movement[index]*i
-                    if y < 0 or y > 7:
-                        continue
-                    x = cord.y+movement[1-index]*j
-                    if x < 0 or x > 7:
-                        continue
-
-                    if board_data.board[y][x] != piece.EMPTY:
-                        if board_data.board[y][x].color == board_data.active:
-                            continue
-                    moves.append(Move(cord, Coordinate(y, x)))
-    return moves
 
 
 def apply_move(board_data: BoardData, move) -> BoardData:
