@@ -133,30 +133,12 @@ def readfen(fen: str) -> BoardData:
 # For bishop, king (not castles tho), queen, rook
 def get_linear_moves(board_data: BoardData, cord: Coordinate) -> list[Coordinate]:
     return []
+    
 
 #  Horse, king
 def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
     return []
 
-# Checks if a move is blocked (by a other piece)
-def is_blocked(board_data: BoardData, move: Move, moving_pattern: tuple[int, int], return_for_en_passant):
-    # Keep applying moving_pattern until active or non active piece is
-    for y in range(move.origin.y+moving_pattern[0], move.dest.y+1, moving_pattern[0]):
-        #
-        for x in range(move.origin.y+moving_pattern[1], move.dest.x+1, moving_pattern[1]):
-            if board_data.board[y][x] != piece.EMPTY:
-                # If piece is blocked by an active color
-                if board_data.board[y][x].color == board_data.active:
-                    return piece.BLOCKED_BY_ACTIVE
-                # Elif piece is blocked by an inactive color
-                elif board_data.board[y][x].color == board_data.active:
-                    if y == move.dest.y and x == move.dest.x:
-                        return piece.CAPTURE
-                    else:
-                        return piece.BLOCKED_BY_INACTIVE
-            else:
-                if y == move.dest.y and x == move.dest.x:
-                        return piece.NOT_BLOCKED
 
 
 
@@ -179,11 +161,7 @@ def is_capture(board_data: BoardData, pos: Coordinate):
             if board_data.board[pos.y][pos.x].color != board_data.active:
                 return piece.CAPTURE
         elif pos.y ==  board_data.en_passant.y and pos.x ==  board_data.en_passant.x:
-            print("e")
             return piece.EN_PASSANT
-        print(pos.y, pos.x,board_data.en_passant.y, board_data.en_passant.x)
-
-
     except IndexError:
         pass
     return piece.NOTHING
@@ -213,25 +191,18 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
                 target_cord = Coordinate(pos.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], pos.x)
                 if board_data.board[target_cord.y][target_cord.x]== piece.EMPTY:
                     moves.append(DoubleHop(pos,target_cord))
-
-        # If he can capture left
+        # If he can capture left and en passant
         state=is_capture(board_data, Coordinate(target_y, pos.x+1))
         if state == piece.CAPTURE:
             moves.append(Capture(pos, Coordinate(target_y, pos.x + 1)))
         elif state == piece.EN_PASSANT:
             moves.append(EnPassant(pos, Coordinate(target_y, pos.x + 1), Coordinate(pos.y, pos.x + 1)))
-
-
-        # Capture right
+        # Capture right and en passant
         state=is_capture(board_data, Coordinate(target_y, pos.x-1))
         if state == piece.CAPTURE:
             moves.append(Capture(pos, Coordinate(target_y, pos.x -1)))
         elif state == piece.EN_PASSANT:
             moves.append(EnPassant(pos, Coordinate(target_y, pos.x - 1), Coordinate(pos.y, pos.x - 1)))
-        # En passant
-
-
-
     # Castles
     else:
         pass

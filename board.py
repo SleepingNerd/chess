@@ -15,6 +15,11 @@ class Board():
         self.selected_overlay.fill((100, 200, 100, 200))
         self.legal_move_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
         pygame.draw.circle(self.legal_move_overlay, (100, 200, 100, 200), [round(self.square_size[0]/2), round(self.square_size[1]/2)], 5,5)
+        self.capture_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
+        self.capture_overlay.fill((200, 100, 100, 200))
+
+
+
 
 
 
@@ -42,7 +47,10 @@ class Board():
                 self.surface.blit(self.selected_overlay, (selected.x * self.square_size[0], selected.y * self.square_size[1]))
 
         for move in legal_moves:
-            self.surface.blit(self.legal_move_overlay, (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1]))
+            if isinstance(move, engine.Capture) or isinstance(move, engine.EnPassant):
+                self.surface.blit(self.capture_overlay, (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1]))
+            else:
+                self.surface.blit(self.legal_move_overlay, (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1]))
 
 
 
