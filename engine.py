@@ -1,7 +1,7 @@
 import piece
 import copy
 
-def flatten( twodlist) -> list:
+def flatten(twodlist) -> list:
     result = []
     for lis in twodlist:
         # If "list" object can return an iterable
@@ -22,7 +22,18 @@ class Move():
     def __init__(self, origin: Coordinate, dest:Coordinate):
         self.origin = origin
         self.dest   = dest
-
+class Capture(Move):
+    pass
+class DoubleHop(Move):
+    pass
+class Promote(Move):
+    def __init__(self, origin: Coordinate, dest:Coordinate, piece_type:int):
+        super().__init__(origin, dest)
+        self.type = piece_type
+class EnPassant(Move):
+    def __init__(self, origin: Coordinate, dest:Coordinate, captured_pawn:Coordinate):
+        super().__init__(origin, dest)
+        self.captured = captured_pawn
 class Replace():
     def __init__(self, dest:Coordinate, dest_piece: piece.Piece):
         self.dest   = dest
@@ -47,15 +58,29 @@ class BoardData():
         self.active  = piece.WHITE
         # Q then K
         self.castles = [[False, False], [False, False]]
-        self.en_passant = None
+        self.reset_en_passant()
         self.halfmoves = 0
+    def reset_en_passant(self):
+        self.en_passant = Coordinate(-100, -100)
     def apply_move(self, move: Move):
+        # If it's a double hop set en passant square
+        if isinstance(move, DoubleHop):
+            self.en_passant = Coordinate(move.origin.y + piece.PAWN_MOVEMENT[self.active][0], move.origin.x)
+        else:
+            if isinstance(move, EnPassant):
+                self.board[move.captured.y][move.captured.x] = piece.EMPTY
+            self.reset_en_passant()
+
+
+        # Just apply the move
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
+
+        # Not important for now
         elif isinstance(move, Replace):
             pass
-
+        # Flip color
         self.active = piece.ACTIVE_TO_INACTIVE[self.active]
 
 def readfen(fen: str) -> BoardData:
@@ -114,7 +139,7 @@ def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
     return []
 
 # Checks if a move is blocked (by a other piece)
-def is_blocked(board_data: BoardData, move: Move, moving_pattern: tuple[int, int]):
+def is_blocked(board_data: BoardData, move: Move, moving_pattern: tuple[int, int], return_for_en_passant):
     # Keep applying moving_pattern until active or non active piece is
     for y in range(move.origin.y+moving_pattern[0], move.dest.y+1, moving_pattern[0]):
         #
@@ -135,6 +160,7 @@ def is_blocked(board_data: BoardData, move: Move, moving_pattern: tuple[int, int
 
 
 
+
     # If it was impossible for that move to happen
     return piece.MOVING_PATTERN_MISTAKE
 
@@ -151,10 +177,16 @@ def is_capture(board_data: BoardData, pos: Coordinate):
     try:
         if board_data.board[pos.y][pos.x] != piece.EMPTY:
             if board_data.board[pos.y][pos.x].color != board_data.active:
-                return True
+                return piece.CAPTURE
+        elif pos.y ==  board_data.en_passant.y and pos.x ==  board_data.en_passant.x:
+            print("e")
+            return piece.EN_PASSANT
+        print(pos.y, pos.x,board_data.en_passant.y, board_data.en_passant.x)
+
+
     except IndexError:
         pass
-    return False
+    return piece.NOTHING
 
 
 
@@ -173,29 +205,38 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     # If piece is a pawn
     elif board_data.board[pos.y][pos.x].type == piece.PAWN:
         target_y = pos.y+piece.PAWN_MOVEMENT[board_data.active][0]
-
         # If he can move forward
         if board_data.board[target_y][pos.x] == piece.EMPTY:
-            moves.append(Coordinate(target_y, pos.x))
+            moves.append(Move(pos, Coordinate(target_y, pos.x)))
             # If he can double hop
             if pos.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
                 target_cord = Coordinate(pos.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], pos.x)
                 if board_data.board[target_cord.y][target_cord.x]== piece.EMPTY:
-                    moves.append(target_cord)
+                    moves.append(DoubleHop(pos,target_cord))
+
         # If he can capture left
-        if is_capture(board_data, Coordinate(target_y, pos.x+1)):
-            moves.append(Coordinate(target_y, pos.x + 1))
+        state=is_capture(board_data, Coordinate(target_y, pos.x+1))
+        if state == piece.CAPTURE:
+            moves.append(Capture(pos, Coordinate(target_y, pos.x + 1)))
+        elif state == piece.EN_PASSANT:
+            moves.append(EnPassant(pos, Coordinate(target_y, pos.x + 1), Coordinate(pos.y, pos.x + 1)))
 
 
-        elif is_capture(board_data, Coordinate(target_y, pos.x-1)):
-            moves.append(Coordinate(target_y, pos.x - 1))
+        # Capture right
+        state=is_capture(board_data, Coordinate(target_y, pos.x-1))
+        if state == piece.CAPTURE:
+            moves.append(Capture(pos, Coordinate(target_y, pos.x -1)))
+        elif state == piece.EN_PASSANT:
+            moves.append(EnPassant(pos, Coordinate(target_y, pos.x - 1), Coordinate(pos.y, pos.x - 1)))
+        # En passant
+
 
 
     # Castles
     else:
         pass
 
-    return flatten(moves)
+    return moves
 
 
 

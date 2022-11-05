@@ -23,29 +23,18 @@ class Human(Player):
             if board_data.board[pos.y][pos.x].color == board_data.active:
                 self.selected = pos
                 self.legal_moves = engine.get_piece_moves(board_data, self.selected)
+            # If piece of other color
             else:
-                if self.is_legal(board_data, pos):
-                    board_data.apply_move(engine.Move(self.selected, pos))
-                    self.reset()
-                
+                self.apply(board_data, pos)
         # If it's empty
         else:
-
-            if self.is_legal(board_data, pos):
-                board_data.apply_move(engine.Move(self.selected, pos))
-                self.reset()
-            else:
-                self.reset()
-                
+            self.apply(board_data, pos)
     # NOTE: In only checks for identity
-    def is_legal(self, board_data: engine.BoardData, pos: engine.Coordinate):
-        for value in self.legal_moves:
-            if value.y == pos.y and value.x == pos.x:
+    def apply(self, board_data: engine.BoardData, pos: engine.Coordinate):
+        for move in self.legal_moves:
+            if move.dest.y == pos.y and move.dest.x == pos.x:
+                board_data.apply_move(move)
+                self.reset()
                 return True
-            
+        self.reset()
         return False
-                
-
-
-            
-                

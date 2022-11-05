@@ -34,14 +34,15 @@ class Board():
     def loadfen(self, fen):
         self.board_data = engine.readfen(fen)
 
-    def draw(self, dest, pos, selected : Optional[list[engine.Coordinate]] = None, legal_moves : list[engine.Coordinate] = []):
+    def draw(self, dest, pos, selected : Optional[list[engine.Coordinate]] = None, legal_moves : list[engine.Move] = []):
         self.surface.blit(self.texture_pack.board, (0,0))
 
         if selected != None:
             for selected in selected:
                 self.surface.blit(self.selected_overlay, (selected.x * self.square_size[0], selected.y * self.square_size[1]))
-        for cord in legal_moves:
-            self.surface.blit(self.legal_move_overlay, (cord.x * self.square_size[0], cord.y * self.square_size[1]))
+
+        for move in legal_moves:
+            self.surface.blit(self.legal_move_overlay, (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1]))
 
 
 
