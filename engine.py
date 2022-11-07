@@ -131,22 +131,49 @@ def readfen(fen: str) -> BoardData:
 
 
 # For bishop, king (not castles tho), queen, rook
-def get_linear_moves(board_data: BoardData, cord: Coordinate) -> list[Coordinate]:
-    return []
-    
-
+def get_linear_moves(board_data: BoardData, cord: Coordinate, movement_patterns: list[tuple[int, int]]) -> list[Coordinate]:
+    moves = []
+    # For every pattern
+    for pattern in movement_patterns:
+        # For index
+        for n in pattern(-1)
+                
+                
+                
+                
+    return flatten(moves)
+                
+                
+            
+        
 #  Horse, king
 def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
     return []
 
+def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):    
+    moves = []
+    y = start.y
+    x = start.x
+    while y < 8 and y > 0:
+        y +=movement_pattern[0]
+        while x < 8 and x > 0:
+            x +=movement_pattern[0]
+            state = is_capture(board_data, Coordinate(y,x))
+            if state == piece.BLOCKED:
+                break;
+            elif state == piece.CAPTURE:
+                moves.append(Capture(start, Coordinate(y, x)))
+            else:
+                moves.append(Move(start, Coordinate(y, x)))
+    return moves
 
 
 
-
-    # If it was impossible for that move to happen
-    return piece.MOVING_PATTERN_MISTAKE
-
-
+            
+            
+        
+    
+    
 
 
 def on_board(x: int) -> bool:
@@ -160,23 +187,21 @@ def is_capture(board_data: BoardData, pos: Coordinate):
         if board_data.board[pos.y][pos.x] != piece.EMPTY:
             if board_data.board[pos.y][pos.x].color != board_data.active:
                 return piece.CAPTURE
+            else:
+                return piece.BLOCKED
         elif pos.y ==  board_data.en_passant.y and pos.x ==  board_data.en_passant.x:
             return piece.EN_PASSANT
     except IndexError:
         pass
     return piece.NOTHING
 
-
-
-
 def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     moves = []
-    # If piece is of linear movement type
+    # If piece is of linear movement type, bishop, queen, rook
     if  board_data.board[pos.y][pos.x].type in piece.LINEAR_MOVERS:
-
         moves.append(get_linear_moves(board_data, Coordinate(pos.y, pos.x)))
 
-    # If piece is of singular movement type
+    # If piece is of singular movement type, king horse
     elif board_data.board[pos.y][pos.x].type in piece.SINGULAR_MOVERS:
         moves.append(get_singular_moves(board_data, Coordinate(pos.y, pos.x)))
 
