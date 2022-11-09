@@ -129,26 +129,39 @@ def readfen(fen: str) -> BoardData:
     return board_data
 
 
-
-# For bishop, king (not castles tho), queen, rook
-def get_linear_moves(board_data: BoardData, cord: Coordinate, movement_patterns: list[tuple[int, int]]) -> list[Coordinate]:
+def every_direction(func, board_data: BoardData, origin: Coordinate, movement_patterns: list[tuple[int, int]]):
+    combs = [[-1, 0, 0, -1], [0, -1, 0, -1]]
     moves = []
-    # For every pattern
+    # For every movement pattern
     for pattern in movement_patterns:
-        # For index
-        for n in pattern(-1)
-                
-                
-                
-                
-    return flatten(moves)
-                
-                
+            # Reversed
+            for i in range(0,2):
+                # For every combination of negative and positive
+                for j in range(0, 4):
+                    moves.append(func(board_data, origin, (pattern[0]*combs[0][j], pattern[1]*combs[1][j])))
+
+                if pattern[0] == pattern[1]: 
+                    break;
+                # Reverse
+                pattern = [pattern[1], pattern[0]]
+    return moves
             
+            
+# For bishop, king (not castles tho), queen, rook
+@every_direction
+def get_linear_moves(board_data : BoardData, origin: Coordinate, movement_pattern: tuple[int, int]) -> list[Move]:
+    return keep_applying(movement_pattern(board_data, origin, movement_pattern))
+
+#  Horse, king, 
+@every_direction
+def get_singular_moves(board_data: BoardData, origin: Coordinate,movement_pattern: tuple[int, int]) -> list[Move]:
+    if is_capture == piece.NOTHING:
+        return Move(origin, Coordinate(origin.y + movement_pattern[0], origin.x + movement_pattern[1]))
+    elif is_capture == piece.Capture:
+        return Capture(origin, Coordinate(origin.y + movement_pattern[0], origin.x + movement_pattern[1]))
+
+         
         
-#  Horse, king
-def get_singular_moves(board_data: BoardData, cord: Coordinate) -> list[Move]:
-    return []
 
 def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):    
     moves = []
