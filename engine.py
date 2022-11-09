@@ -129,22 +129,25 @@ def readfen(fen: str) -> BoardData:
     return board_data
 
 
-def every_direction(func, board_data: BoardData, origin: Coordinate, movement_patterns: list[tuple[int, int]]):
-    combs = [[-1, 0, 0, -1], [0, -1, 0, -1]]
-    moves = []
-    # For every movement pattern
-    for pattern in movement_patterns:
+def every_direction(func, *args):
+    def wrapper(board_data: BoardData, origin: Coordinate, movement_patterns: list[tuple[int, int]]):
+        combs = [[-1, 1, 1, -1], [1, -1, 1, -1]]
+        moves = []
+        # For every movement pattern
+        for pattern in movement_patterns:
             # Reversed
             for i in range(0,2):
                 # For every combination of negative and positive
                 for j in range(0, 4):
                     moves.append(func(board_data, origin, (pattern[0]*combs[0][j], pattern[1]*combs[1][j])))
-
+                # 
                 if pattern[0] == pattern[1]: 
                     break;
                 # Reverse
                 pattern = [pattern[1], pattern[0]]
-    return moves
+        return moves
+    return wrapper
+
             
             
 # For bishop, king (not castles tho), queen, rook
@@ -159,10 +162,7 @@ def get_singular_moves(board_data: BoardData, origin: Coordinate,movement_patter
         return Move(origin, Coordinate(origin.y + movement_pattern[0], origin.x + movement_pattern[1]))
     elif is_capture == piece.Capture:
         return Capture(origin, Coordinate(origin.y + movement_pattern[0], origin.x + movement_pattern[1]))
-
-         
-        
-
+    
 def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):    
     moves = []
     y = start.y
@@ -212,7 +212,7 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     moves = []
     # If piece is of linear movement type, bishop, queen, rook
     if  board_data.board[pos.y][pos.x].type in piece.LINEAR_MOVERS:
-        moves.append(get_linear_moves(board_data, Coordinate(pos.y, pos.x)))
+        moves.append(get_linear_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[board_data.board[pos.y][pos.x].type]))
 
     # If piece is of singular movement type, king horse
     elif board_data.board[pos.y][pos.x].type in piece.SINGULAR_MOVERS:
