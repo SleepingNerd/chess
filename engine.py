@@ -170,15 +170,13 @@ def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: t
         while x < 8 and x > -1:
             x +=movement_pattern[1]
             state = is_capture(board_data, Coordinate(y,x))
-            print(y, x)
             if state == piece.BLOCKED:
                 break;
             elif state == piece.CAPTURE:
                 moves.append(Capture(start, Coordinate(y, x)))
             else:
                 moves.append(Move(start, Coordinate(y, x)))
-    print(moves)
-    return moves
+        return moves
 
 
 
