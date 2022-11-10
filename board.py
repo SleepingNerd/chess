@@ -49,7 +49,7 @@ class Board():
         for move in legal_moves:
             if isinstance(move, engine.Capture) or isinstance(move, engine.EnPassant):
                 self.surface.blit(self.capture_overlay, (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1]))
-            else:
+            elif isinstance(move, engine.Move):
                 self.surface.blit(self.legal_move_overlay, (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1]))
 
 

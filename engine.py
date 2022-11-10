@@ -145,15 +145,13 @@ def every_direction(func, *args):
                     break;
                 # Reverse
                 pattern = [pattern[1], pattern[0]]
-        return moves
+        return flatten(moves)
     return wrapper
 
-            
-            
 # For bishop, king (not castles tho), queen, rook
 @every_direction
 def get_linear_moves(board_data : BoardData, origin: Coordinate, movement_pattern: tuple[int, int]) -> list[Move]:
-    return keep_applying(movement_pattern(board_data, origin, movement_pattern))
+    return keep_applying(board_data, origin, movement_pattern)
 
 #  Horse, king, 
 @every_direction
@@ -167,17 +165,19 @@ def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: t
     moves = []
     y = start.y
     x = start.x
-    while y < 8 and y > 0:
+    while y < 8 and y > -1:
         y +=movement_pattern[0]
-        while x < 8 and x > 0:
-            x +=movement_pattern[0]
+        while x < 8 and x > -1:
+            x +=movement_pattern[1]
             state = is_capture(board_data, Coordinate(y,x))
+            print(y, x)
             if state == piece.BLOCKED:
                 break;
             elif state == piece.CAPTURE:
                 moves.append(Capture(start, Coordinate(y, x)))
             else:
                 moves.append(Move(start, Coordinate(y, x)))
+    print(moves)
     return moves
 
 
@@ -213,7 +213,6 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     # If piece is of linear movement type, bishop, queen, rook
     if  board_data.board[pos.y][pos.x].type in piece.LINEAR_MOVERS:
         moves.append(get_linear_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[board_data.board[pos.y][pos.x].type]))
-
     # If piece is of singular movement type, king horse
     elif board_data.board[pos.y][pos.x].type in piece.SINGULAR_MOVERS:
         moves.append(get_singular_moves(board_data, Coordinate(pos.y, pos.x)))
@@ -244,7 +243,7 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     # Castles
     else:
         pass
-
+    
     return moves
 
 
@@ -310,6 +309,6 @@ def get_moves(board_data: BoardData):
     # Check for castles (or skips if king was in check)
 
     # Check for en passants (and cancels them out if it results in a check afterwards)
-
+    print(moves)
     # Check for promotions, and double pawn movements (and cancels them out if it results in a check afterwards)
     return moves
