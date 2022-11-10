@@ -140,8 +140,9 @@ def every_direction(func, *args):
                 # For every combination of negative and positive
                 for j in range(0, 4):
                     moves.append(func(board_data, origin, (pattern[0]*combs[0][j], pattern[1]*combs[1][j])))
-                # 
-                if pattern[0] == pattern[1]: 
+
+                #
+                if pattern[0] == pattern[1]:
                     break;
                 # Reverse
                 pattern = [pattern[1], pattern[0]]
@@ -153,39 +154,35 @@ def every_direction(func, *args):
 def get_linear_moves(board_data : BoardData, origin: Coordinate, movement_pattern: tuple[int, int]) -> list[Move]:
     return keep_applying(board_data, origin, movement_pattern)
 
-#  Horse, king, 
+#  Horse, king,
 @every_direction
 def get_singular_moves(board_data: BoardData, origin: Coordinate,movement_pattern: tuple[int, int]) -> list[Move]:
-    if is_capture == piece.NOTHING:
-        return Move(origin, Coordinate(origin.y + movement_pattern[0], origin.x + movement_pattern[1]))
-    elif is_capture == piece.Capture:
-        return Capture(origin, Coordinate(origin.y + movement_pattern[0], origin.x + movement_pattern[1]))
-    
-def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):    
+    dest = Coordinate(origin.y + movement_pattern[0], origin.x + movement_pattern[1])
+    state = is_capture(board_data, dest)
+    print(state)
+    if  state == piece.BLOCKED:
+        return []
+    elif state == piece.CAPTURE:
+        return [Capture(origin, dest)]
+    else:
+        return  [Move(origin, dest)]
+
+def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):
     moves = []
-    y = start.y
-    x = start.x
-    while y < 8 and y > -1:
+    y = start.y + movement_pattern[0]
+    x = start.x  + movement_pattern[1]
+    while y < 8 and y > -1 and x < 8 and x > -1:
+        state = is_capture(board_data, Coordinate(y,x))
+        if state == piece.BLOCKED:
+            return moves
+        elif state == piece.CAPTURE:
+            moves.append(Capture(start, Coordinate(y, x)))
+            return moves
+        else:
+            moves.append(Move(start, Coordinate(y, x)))
+        x +=movement_pattern[1]
         y +=movement_pattern[0]
-        while x < 8 and x > -1:
-            x +=movement_pattern[1]
-            state = is_capture(board_data, Coordinate(y,x))
-            if state == piece.BLOCKED:
-                break;
-            elif state == piece.CAPTURE:
-                moves.append(Capture(start, Coordinate(y, x)))
-            else:
-                moves.append(Move(start, Coordinate(y, x)))
-        return moves
-
-
-
-            
-            
-        
-    
-    
-
+    return moves
 
 def on_board(x: int) -> bool:
     if x < 0 or x >7:
@@ -213,7 +210,7 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
         moves.append(get_linear_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[board_data.board[pos.y][pos.x].type]))
     # If piece is of singular movement type, king horse
     elif board_data.board[pos.y][pos.x].type in piece.SINGULAR_MOVERS:
-        moves.append(get_singular_moves(board_data, Coordinate(pos.y, pos.x)))
+        moves.append(get_singular_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[board_data.board[pos.y][pos.x].type]))
 
     # If piece is a pawn
     elif board_data.board[pos.y][pos.x].type == piece.PAWN:
@@ -241,8 +238,7 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     # Castles
     else:
         pass
-    
-    return moves
+    return flatten(moves)
 
 
 
@@ -258,7 +254,6 @@ def is_move_legal(board_data: BoardData, move: Move):
     if board_data[move.origin.y][move.origin.x] in piece.LINEAR_MOVERS:
         if move in get_linear_moves(board_data, cord):
             return True
-
 
     elif board_data[move.origin.y][move.origin.x] in piece.SINGULAR_MOVERS:
         pass
