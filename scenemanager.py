@@ -85,7 +85,7 @@ class SceneManager():
         # Player list, and portret ui
         self.portrets = "assets/images/ui/portrets/"+self.config["portrets"]+"/"
         self.portret_size = [75,75]
-        self.players = [player.Human(self.portrets + "human.png", self.portret_size, "Human", self.buttons_font, self.ui_text), player.Player(self.portrets + "bot.png", self.portret_size, "Fishstick", self.buttons_font, self.ui_text)]
+        self.players = [player.Human(self.portrets + "human.png", self.portret_size, "Human", self.buttons_font, self.ui_text), player.RandomBot(self.portrets + "bot.png", self.portret_size, "Random", self.buttons_font, self.ui_text)]
         self.player_index = 0
         self.active_players = [None, None]
         self.total_players = len(self.players)
@@ -218,7 +218,10 @@ class SceneManager():
                     pos[1] += 1
 
                 self.active_players[self.board.board_data.active].touch(self.board.board_data, engine.Coordinate(pos[1], pos[0]))
-
+        else:
+            move =  self.active_players[self.board.board_data.active].move(self.board.board_data)
+            if move != None:
+                self.board.board_data.apply_move(move)
 
 
 

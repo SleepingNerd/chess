@@ -1,6 +1,8 @@
 import pygame
 import engine
 import piece
+from random import choice
+from typing import Optional
 class Player():
     def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False):
         self.name = name
@@ -38,3 +40,13 @@ class Human(Player):
                 return True
         self.reset()
         return False
+
+class RandomBot(Player):
+    def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False, dept=0):
+        super().__init__(avatar_img, avatar_img_size,name, font, font_color, antialiasing)
+    def move(self, board_data: engine.BoardData) -> Optional[engine.Move]:
+        moves = engine.get_moves(board_data)
+        if moves == []:
+            return None
+        return choice(moves)
+    
