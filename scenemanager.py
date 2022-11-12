@@ -222,6 +222,7 @@ class SceneManager():
             move =  self.active_players[self.board.board_data.active].move(self.board.board_data)
             if move != None:
                 self.board.board_data.apply_move(move)
+                
 
 
 

@@ -194,8 +194,8 @@ def in_check(board_data : BoardData, origin: Coordinate) -> bool:
     if is_dest(board_data, knight_moves, [piece.KNIGHT]):
         return True
     
-    king_moves = get_singular_moves(board_data, origin, piece.PIECE_TO_MOVEMENT[piece.KNIGHT])
-    if is_dest(board_data, knight_moves, [piece.KING]):
+    king_moves = get_singular_moves(board_data, origin, piece.PIECE_TO_MOVEMENT[piece.KING])
+    if is_dest(board_data, king_moves, [piece.KING]):
             return True
     
     target_y = origin.y - piece.PAWN_MOVEMENT[piece.ACTIVE_TO_INACTIVE[board_data.active]][0]
