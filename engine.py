@@ -1,5 +1,6 @@
 import piece
 import copy
+from typing import Optional
 
 def flatten(twodlist) -> list:
     result = []
@@ -153,19 +154,80 @@ def every_direction(func, *args):
 @every_direction
 def get_linear_moves(board_data : BoardData, origin: Coordinate, movement_pattern: tuple[int, int]) -> list[Move]:
     return keep_applying(board_data, origin, movement_pattern)
+#
+
+
 
 #  Horse, king,
 @every_direction
 def get_singular_moves(board_data: BoardData, origin: Coordinate,movement_pattern: tuple[int, int]) -> list[Move]:
     dest = Coordinate(origin.y + movement_pattern[0], origin.x + movement_pattern[1])
-    state = is_capture(board_data, dest)
-    print(state)
-    if  state == piece.BLOCKED:
-        return []
-    elif state == piece.CAPTURE:
-        return [Capture(origin, dest)]
+    if dest.y < 8 and  dest.y > -1 and  dest.x < 8 and dest.x > -1:
+        state = is_capture(board_data, dest)
+        if  state == piece.BLOCKED:
+            return []
+        elif state == piece.CAPTURE:
+            return [Capture(origin, dest)]
+        else:
+            return  [Move(origin, dest)]
     else:
-        return  [Move(origin, dest)]
+        return []
+
+# Checks if inactive color is in check
+def in_check(board_data : BoardData, origin: Coordinate) -> bool:
+    # Become color that just moved or might be in check
+    board_data.active = piece.ACTIVE_TO_INACTIVE[board_data.active]
+
+    # Collect rook moves from king
+    rook_moves   =  get_linear_moves(board_data, origin, piece.PIECE_TO_MOVEMENT[piece.ROOK])
+    print("------------------------------------")
+
+    # If the dest of one of those moves is a rook or queen
+    if is_dest(board_data, rook_moves, [piece.ROOK, piece.QUEEN]):
+        return True
+
+    bishop_moves =  get_linear_moves(board_data, origin, piece.PIECE_TO_MOVEMENT[piece.BISHOP])
+    if is_dest(board_data, bishop_moves, [piece.BISHOP, piece.QUEEN]):
+        return True
+
+    knight_moves =  get_singular_moves(board_data, origin, piece.PIECE_TO_MOVEMENT[piece.KNIGHT])
+    if is_dest(board_data, knight_moves, [piece.KNIGHT]):
+        return True
+    target_y = origin.y - piece.PAWN_MOVEMENT[board_data.active][0]
+    if is_piece(board_data, Coordinate(target_y, origin.x + 1), piece.PAWN) and is_color(board_data, Coordinate(target_y, origin.x + 1), piece.ACTIVE_TO_INACTIVE[board_data.active]):
+        return True
+    if is_piece(board_data, Coordinate(target_y, origin.x - 1), piece.PAWN) and is_color(board_data, Coordinate(target_y, origin.x - 1), piece.ACTIVE_TO_INACTIVE[board_data.active]):
+        return True
+    return False
+
+
+
+
+def is_dest(board_data : BoardData, moves: list[Move], target: list[int]) -> bool:
+    for move in moves:
+        print(board_data.board[move.dest.y][move.dest.x])
+        if board_data.board[move.dest.y][move.dest.x] != piece.EMPTY:
+            print(board_data.board[move.dest.y][move.dest.x].type, target)
+            if board_data.board[move.dest.y][move.dest.x].type in target:
+                print("ye")
+                return True
+    return False
+
+def is_piece(board_data: BoardData, pos: Coordinate, piece: int):
+    try:
+        if board_data.board[pos.y][pos.x].type == piece:
+            return True
+    except:
+        pass
+    return False
+
+def is_color(board_data: BoardData, pos: Coordinate, color: int):
+    try:
+        if board_data.board[pos.y][pos.x].color == color:
+            return True
+    except:
+        pass
+    return False
 
 def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):
     moves = []
@@ -203,6 +265,17 @@ def is_capture(board_data: BoardData, pos: Coordinate):
         pass
     return piece.NOTHING
 
+# Finds active king
+def find_king(board_data: BoardData) -> Optional[Coordinate]:
+    for i in range(0, 8):
+        for j in range(0, 8):
+            if board_data.board[i][j] != piece.EMPTY:
+                if board_data.board[i][j].type == piece.KING and  board_data.board[i][j].color == board_data.active:
+                    return Coordinate(i, j)
+    return None
+
+
+
 def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     moves = []
     # If piece is of linear movement type, bishop, queen, rook
@@ -238,7 +311,20 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     # Castles
     else:
         pass
-    return flatten(moves)
+
+    # Check for checks
+    moves = flatten(moves)
+    legal_moves = []
+    king_origin = find_king(board_data)
+    for move in moves:
+        temp  = apply_move(board_data, move)
+        kpos = find_king(board_data)
+
+        if in_check(temp, kpos) == False:
+            legal_moves.append(move)
+
+
+    return legal_moves
 
 
 
@@ -260,30 +346,6 @@ def is_move_legal(board_data: BoardData, move: Move):
     return False
 
 
-
-
-
-def in_check(board_data: BoardData, color) -> bool:
-    "Returns true, if color's king is in check"
-    position = None
-    # Find king
-    for y in range(0, 7):
-        for x in range(0, 7):
-            if board_data.board[y][x].type == piece.KING and board_data.board[y][x].color == color:
-                position = Coordinate(y, x)
-    # Ah man
-
-
-
-
-
-
-
-
-
-
-
-
 def get_moves(board_data: BoardData):
     moves = []
     # First of all check if the king is in check
@@ -302,6 +364,7 @@ def get_moves(board_data: BoardData):
     # Check for castles (or skips if king was in check)
 
     # Check for en passants (and cancels them out if it results in a check afterwards)
-    print(moves)
     # Check for promotions, and double pawn movements (and cancels them out if it results in a check afterwards)
+
+
     return moves
