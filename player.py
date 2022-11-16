@@ -17,6 +17,7 @@ class Human(Player):
     def reset(self):
         self.selected = None
         self.legal_moves = []
+        self.ask_type = False
 
     def touch(self, board_data: engine.BoardData, pos: engine.Coordinate):
         # If it's not empty
@@ -35,9 +36,12 @@ class Human(Player):
     def apply(self, board_data: engine.BoardData, pos: engine.Coordinate):
         for move in self.legal_moves:
             if move.dest.y == pos.y and move.dest.x == pos.x:
-                board_data.apply_move(move)
-                self.reset()
-                return True
+                if isinstance(move, engine.Promotion):
+                    self.ask_type = True
+                else:
+                    board_data.apply_move(move)
+                    self.reset()
+                    return True
         self.reset()
         return False
 

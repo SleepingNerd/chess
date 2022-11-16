@@ -17,6 +17,8 @@ class Board():
         pygame.draw.circle(self.legal_move_overlay, (100, 200, 100, 200), [round(self.square_size[0]/2), round(self.square_size[1]/2)], 5,5)
         self.capture_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
         self.capture_overlay.fill((200, 100, 100, 200))
+        self.promotion_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
+        self.promotion_overlay.fill((100, 200, 50, 20))
 
 
 
@@ -46,20 +48,21 @@ class Board():
             for selected in selected:
                 self.surface.blit(self.selected_overlay, (selected.x * self.square_size[0], selected.y * self.square_size[1]))
 
-        for move in legal_moves:
+        for i in range(0,len(legal_moves)):
+            move = legal_moves[i]
+            move_dest = (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1])
             if isinstance(move, engine.Capture) or isinstance(move, engine.EnPassant):
-                self.surface.blit(self.capture_overlay, (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1]))
+                self.surface.blit(self.capture_overlay, move_dest)
+            elif isinstance(move, engine.Promotion):
+                self.surface.blit(self.promotion_overlay, move_dest)
+                i += 3
             elif isinstance(move, engine.Move):
-                self.surface.blit(self.legal_move_overlay, (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1]))
-
-
-
+                self.surface.blit(self.legal_move_overlay, move_dest)
 
         for y in range(0, len(self.board_data.board[0])):
             for x in range(0, len(self.board_data.board[1])):
                 if self.board_data.board[y][x] != piece.EMPTY:
                     self.surface.blit(self.texture_pack.pieces[self.board_data.board[y][x].color][self.board_data.board[y][x].type], [
                                       x*self.square_size[0], y * self.square_size[1]])
-
 
         dest.blit(self.surface, pos)

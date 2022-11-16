@@ -27,7 +27,7 @@ class Capture(Move):
     pass
 class DoubleHop(Move):
     pass
-class Promote(Move):
+class Promotion(Move):
     def __init__(self, origin: Coordinate, dest:Coordinate, piece_type:int):
         super().__init__(origin, dest)
         self.type = piece_type
@@ -72,15 +72,15 @@ class BoardData():
                 self.board[move.captured.y][move.captured.x] = piece.EMPTY
             self.reset_en_passant()
 
-
         # Just apply the move
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
-
-        # Not important for now
-        elif isinstance(move, Replace):
-            pass
+        #  Tf
+        elif isinstance(move, Promotion):
+            self.board[move.dest.y][move.dest.x].type = move.type
+            print("grg")
+            
         # Flip color
         self.active = piece.ACTIVE_TO_INACTIVE[self.active]
 
@@ -289,27 +289,40 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
 
     # If piece is a pawn
     elif board_data.board[pos.y][pos.x].type == piece.PAWN:
-        target_y = pos.y+piece.PAWN_MOVEMENT[board_data.active][0]
+        target_y = pos.y+piece.PAWN_MOVEMENT[board_data.active][0]    
+        pawn_moves = []
+           
         # If he can move forward
         if board_data.board[target_y][pos.x] == piece.EMPTY:
-            moves.append(Move(pos, Coordinate(target_y, pos.x)))
+            pawn_moves.append(Move(pos, Coordinate(target_y, pos.x)))
             # If he can double hop
             if pos.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
                 target_cord = Coordinate(pos.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], pos.x)
                 if board_data.board[target_cord.y][target_cord.x]== piece.EMPTY:
                     moves.append(DoubleHop(pos,target_cord))
+            
         # If he can capture left and en passant
         state=is_capture(board_data, Coordinate(target_y, pos.x+1))
         if state == piece.CAPTURE:
-            moves.append(Capture(pos, Coordinate(target_y, pos.x + 1)))
+            pawn_moves.append(Capture(pos, Coordinate(target_y, pos.x + 1)))
         elif state == piece.EN_PASSANT:
             moves.append(EnPassant(pos, Coordinate(target_y, pos.x + 1), Coordinate(pos.y, pos.x + 1)))
         # Capture right and en passant
         state=is_capture(board_data, Coordinate(target_y, pos.x-1))
         if state == piece.CAPTURE:
-            moves.append(Capture(pos, Coordinate(target_y, pos.x -1)))
+            pawn_moves.append(Capture(pos, Coordinate(target_y, pos.x -1)))
         elif state == piece.EN_PASSANT:
             moves.append(EnPassant(pos, Coordinate(target_y, pos.x - 1), Coordinate(pos.y, pos.x - 1)))
+            
+        # If pawn has reached promotion square
+        if target_y == piece.PAWN_PROMOTE_POS[board_data.active]:
+            for move in pawn_moves:
+                for i in (piece.ROOK, piece.BISHOP, piece.KNIGHT, piece.QUEEN):
+                    moves.append(Promotion(move.origin, move.dest, i))
+        else:
+            moves.append(pawn_moves)
+                    
+                
     # Castles
     else:
         pass
@@ -324,6 +337,8 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
             kpos = Coordinate(move.dest.y, move.dest.x)
         
         if in_check(apply_move(board_data,move), kpos) == False:
+            
+                
             legal_moves.append(move)
 
 

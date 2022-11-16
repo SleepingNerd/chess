@@ -58,7 +58,7 @@ class SceneManager():
         self.ui_black = (0,0,0)
         self.ui_secondary = (30,30,30)
         self.ui_text = (255,255,255)
-        self.ui_green = (124,252,0)
+        self.ui_popup = (100, 100, 255)
 
         # Fonts used in ui
         self.title_font =   pygame.font.Font(Path("assets/fonts/Gamer.TTF"),50)
@@ -239,10 +239,14 @@ class SceneManager():
 
         selected = None
         legal_moves = []
+        # 
         if isinstance(self.active_players[self.board.board_data.active], player.Human):
+            if self.active_players[self.board.board_data.active].ask_type:
+                pass
             if self.active_players[self.board.board_data.active].selected != None:
                 selected = [self.active_players[self.board.board_data.active].selected]
             legal_moves = self.active_players[self.board.board_data.active].legal_moves
+            
 
         self.board.draw(self.surface, ((self.board_offset, self.board_offset)), selected, legal_moves)
         self.surface.blit(self.title_surface, self.title_pos)
