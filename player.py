@@ -17,7 +17,7 @@ class Human(Player):
     def reset(self):
         self.selected = None
         self.legal_moves = []
-        self.promotion = False
+        self.promotion = None
 
     def touch(self, board_data: engine.BoardData, pos: engine.Coordinate):
         # If it's not empty
@@ -33,30 +33,28 @@ class Human(Player):
         else:
             self.apply(board_data, pos)
     # NOTE: In only checks for identity
-    def apply(self, board_data: engine.BoardData, pos: engine.Coordinate, type = None):
+    def apply(self, board_data: engine.BoardData, pos: engine.Coordinate, p_type = None):
         for move in self.legal_moves:
             if move.dest.y == pos.y and move.dest.x == pos.x:
                 # If it's a promotion move
                 if isinstance(move, engine.Promotion):
-                    if type == None:
-                      self.ask_type()
-                    elif move.type == type:
-                        self.apply()
-                    return False
+                    if p_type == None:
+                        self.promotion = move.dest
+                        return False
+                    elif move.type == p_type:
+                        print(move.type)
+                        board_data.apply_move(move)
                 else:
                     board_data.apply_move(move)
                     self.reset()
                     return True
         self.reset()
         return False
-    def ask_type(self):
-        self.promotion = True
         
-    def tell_type(self, type)
+    def tell_type(self, board_data: engine.BoardData, p_type):
+        self.apply(board_data, self.promotion, p_type)
     
-
-        
-
+    
 class RandomBot(Player):
     def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False, dept=0):
         super().__init__(avatar_img, avatar_img_size,name, font, font_color, antialiasing)

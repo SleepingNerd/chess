@@ -76,10 +76,10 @@ class BoardData():
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
-        #  Tf
-        elif isinstance(move, Promotion):
+        #  If it could promote
+        if isinstance(move, Promotion):
+        
             self.board[move.dest.y][move.dest.x].type = move.type
-            print("grg")
             
         # Flip color
         self.active = piece.ACTIVE_TO_INACTIVE[self.active]

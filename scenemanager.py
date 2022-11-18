@@ -246,11 +246,12 @@ class SceneManager():
         pygame.draw.rect(self.surface, self.ui_secondary, self.board_underlay)
 
         selected = None
+        self.ui_promotion_buttons.buttons = []
         legal_moves = []
         # 
         if isinstance(self.active_players[self.board.board_data.active], player.Human):
             # Pop up ui for promotion
-            if self.active_players[self.board.board_data.active].promotion:
+            if self.active_players[self.board.board_data.active].promotion != None:
                 # Create the buttons
                 self.ui_promotion_pos = [700,200]
                 for piece in range(0, 4):
@@ -262,9 +263,13 @@ class SceneManager():
             
 
         # Ui buttons
-        for i in len(self.ui_promotion_buttons.buttons):
-            self.ui_promotion_buttons[i].update(self.click_pos)
-            if self.ui_promotion_buttons[i]:
+        for i in range(0,len(self.ui_promotion_buttons.buttons)):
+            self.ui_promotion_buttons.buttons[i].update(self.click_pos)
+            if self.ui_promotion_buttons.buttons[i].pressed:
+                self.active_players[self.board.board_data.active].tell_type(self.board.board_data, i)
+                break;
+                
+                
                 
                 
         self.board.draw(self.surface, ((self.board_offset, self.board_offset)), selected, legal_moves)
