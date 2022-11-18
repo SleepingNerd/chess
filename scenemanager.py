@@ -6,6 +6,7 @@ from json import load
 from board import Board
 from pathlib import Path
 from button import TextButton
+from button import ImageButton
 import texture
 import sys
 import time
@@ -59,7 +60,7 @@ class SceneManager():
         self.ui_secondary = (30,30,30)
         self.ui_text = (255,255,255)
         self.ui_popup = (100, 100, 255)
-
+        
         # Fonts used in ui
         self.title_font =   pygame.font.Font(Path("assets/fonts/Gamer.TTF"),50)
         self.buttons_font = pygame.font.Font(Path("assets/fonts/Gamer.TTF"),50)
@@ -70,6 +71,11 @@ class SceneManager():
 
         # Directory containing sounds
         self.sound_pack = "assets/sounds/" + self.config["sound_pack"] +"/"
+        
+         # Sounds
+        self.click_sound = self.sound_pack + "click.wav"
+
+
 
         # "main ui" buttons
         buttons = ["Play", "Settings", "Exit"]
@@ -112,7 +118,9 @@ class SceneManager():
         self.ingame = False
 
         # Game stuff
-
+        self.ui_promotion_pos = None
+        self.ui_promotion_size = self.board.square_size
+        self.ui_promotion_buttons = button.ButtonHandler([])
 
 
         # Delta time
@@ -241,15 +249,29 @@ class SceneManager():
         legal_moves = []
         # 
         if isinstance(self.active_players[self.board.board_data.active], player.Human):
-            if self.active_players[self.board.board_data.active].ask_type:
-                pass
+            # Pop up ui for promotion
+            if self.active_players[self.board.board_data.active].promotion:
+                # Create the buttons
+                self.ui_promotion_pos = [700,200]
+                for piece in range(0, 4):
+                    self.ui_promotion_buttons.buttons.append(ImageButton(self.ui_promotion_size, [self.ui_promotion_pos[0], self.ui_promotion_pos[1] +self.ui_promotion_size[1]*piece], self.click_sound, self.board.texture_pack.pieces[self.board.board_data.active][piece]))
+            #      
             if self.active_players[self.board.board_data.active].selected != None:
                 selected = [self.active_players[self.board.board_data.active].selected]
             legal_moves = self.active_players[self.board.board_data.active].legal_moves
             
 
+        # Ui buttons
+        for i in len(self.ui_promotion_buttons.buttons):
+            self.ui_promotion_buttons[i].update(self.click_pos)
+            if self.ui_promotion_buttons[i]:
+                
+                
         self.board.draw(self.surface, ((self.board_offset, self.board_offset)), selected, legal_moves)
         self.surface.blit(self.title_surface, self.title_pos)
+        
+        
+        self.ui_promotion_buttons.draws(self.surface)
         self.draw_main_ui()
 
 

@@ -84,3 +84,11 @@ class TextButton(Button):
     def change_bg_color(self, color):
         self.bg_color = color
         self.redraw_button()
+
+class ImageButton(Button):
+    def __init__(self, size, pos, sound, image):
+        super().__init__(size, pos, sound)
+        if isinstance(image, str):
+            self.image = pygame.transform.scale(pygame.image.load(image), size)
+        elif isinstance(image, pygame.Surface):
+            self.image = pygame.transform.scale(image, size)
