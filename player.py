@@ -42,7 +42,6 @@ class Human(Player):
                         self.promotion = move.dest
                         return False
                     elif move.type == p_type:
-                        print(move.type)
                         board_data.apply_move(move)
                 else:
                     board_data.apply_move(move)

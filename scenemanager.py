@@ -230,8 +230,6 @@ class SceneManager():
             move =  self.active_players[self.board.board_data.active].move(self.board.board_data)
             if move != None:
                 self.board.board_data.apply_move(move)
-                
-
 
 
     def maingame(self):
@@ -250,16 +248,18 @@ class SceneManager():
         legal_moves = []
         # 
         if isinstance(self.active_players[self.board.board_data.active], player.Human):
-            # Pop up ui for promotion
+            #      
+            if self.active_players[self.board.board_data.active].selected != None:
+                selected = [self.active_players[self.board.board_data.active].selected]
+            legal_moves = self.active_players[self.board.board_data.active].legal_moves
+            
+             # Pop up ui for promotion
             if self.active_players[self.board.board_data.active].promotion != None:
                 # Create the buttons
                 self.ui_promotion_pos = [700,200]
                 for piece in range(0, 4):
                     self.ui_promotion_buttons.buttons.append(ImageButton(self.ui_promotion_size, [self.ui_promotion_pos[0], self.ui_promotion_pos[1] +self.ui_promotion_size[1]*piece], self.click_sound, self.board.texture_pack.pieces[self.board.board_data.active][piece]))
-            #      
-            if self.active_players[self.board.board_data.active].selected != None:
-                selected = [self.active_players[self.board.board_data.active].selected]
-            legal_moves = self.active_players[self.board.board_data.active].legal_moves
+
             
 
         # Ui buttons

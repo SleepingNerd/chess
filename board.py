@@ -18,7 +18,7 @@ class Board():
         self.capture_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
         self.capture_overlay.fill((200, 100, 100, 200))
         self.promotion_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
-        self.promotion_overlay.fill((100, 200, 50, 20))
+        self.promotion_overlay.fill((100, 200, 50, 40))
 
 
 

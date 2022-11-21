@@ -76,9 +76,10 @@ class BoardData():
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
+            
         #  If it could promote
         if isinstance(move, Promotion):
-        
+            print(move.dest.y, move.dest.x)
             self.board[move.dest.y][move.dest.x].type = move.type
             
         # Flip color
@@ -105,7 +106,7 @@ def readfen(fen: str) -> BoardData:
             if file > 7:
                 break
             elif ch in piece.CH_TO_PIECE:
-                board_data.board[len(fen[0])- 1 -rank][file] = piece.CH_TO_PIECE[ch]
+                board_data.board[len(fen[0])- 1 -rank][file] = piece.Piece(piece.CH_TO_PIECE[ch].color, piece.CH_TO_PIECE[ch].type) 
                 file += 1
             else:
                 file += int(ch)
@@ -280,6 +281,8 @@ def find_king(board_data: BoardData) -> Optional[Coordinate]:
 
 def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     moves = []
+    # TODO: STOP REFERRING TO LIST SAVE VALUE INSTEAD 
+
     # If piece is of linear movement type, bishop, queen, rook
     if  board_data.board[pos.y][pos.x].type in piece.LINEAR_MOVERS:
         moves.append(get_linear_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[board_data.board[pos.y][pos.x].type]))
