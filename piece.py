@@ -23,12 +23,17 @@ EMPTY = 0
 
 
 COLOR_TO_WORD = ["White", "Black"]
+# 0 For queenside- 1 for kingside
 CH_TO_CASTLES = {"Q":[WHITE, 0],"K":[WHITE, 1], "q":[BLACK, 0], "k":[BLACK, 1]}
 CH_TO_PIECE = {"p": Piece(BLACK, PAWN), "r": Piece(BLACK, ROOK), "n": Piece(BLACK, KNIGHT), "b": Piece(BLACK, BISHOP), "k": Piece(BLACK, KING), "q": Piece(
     BLACK, QUEEN), "P": Piece(WHITE, PAWN), "R": Piece(WHITE, ROOK), "N": Piece(WHITE, KNIGHT),  "B": Piece(WHITE, BISHOP),  "K": Piece(WHITE, KING), "Q": Piece(WHITE, QUEEN)}
 CH_TO_COLOR = {"w": WHITE, "b": BLACK}
 
 CH_TO_INDEX = {"a":0 , "b": 1, "c" : 2, "d" : 3, "e" : 4, "f" : 5, "g" : 6, "h": 7}
+
+CASTLE_ROW = {WHITE: 0, BLACK: 7}
+# Q FIRST A
+CASTLES_SQUARE = {0: [0, 1] ,1:[6, 7]}
 
 # Y IS ALWAYS FIRST
 PIECE_TO_MOVEMENT = {ROOK: [[1, 0]], KNIGHT: [[1,2]], BISHOP: [[1,1]], QUEEN:[[1, 0], [1,1]], KING: [[1, 0], [1,1]]}

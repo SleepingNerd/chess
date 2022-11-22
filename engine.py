@@ -39,6 +39,20 @@ class Replace():
     def __init__(self, dest:Coordinate, dest_piece: piece.Piece):
         self.dest   = dest
         self.piece = dest_piece
+        
+class Castles():
+    def __init__(self, origin: Coordinate):
+        self.origin = origin
+        self.dest = piece.cas
+        
+class QueenSideCastles():
+    def __init__(self):
+        pass
+class KingSideCastles():
+    def __init__(self):
+        pass
+
+        
 
 class BoardData():
     """
@@ -61,6 +75,7 @@ class BoardData():
         self.castles = [[False, False], [False, False]]
         self.reset_en_passant()
         self.halfmoves = 0
+        
     def reset_en_passant(self):
         self.en_passant = Coordinate(-100, -100)
     def apply_move(self, move: Move):
@@ -79,7 +94,6 @@ class BoardData():
             
         #  If it could promote
         if isinstance(move, Promotion):
-            print(move.dest.y, move.dest.x)
             self.board[move.dest.y][move.dest.x].type = move.type
             
         # Flip color
@@ -96,8 +110,6 @@ def readfen(fen: str) -> BoardData:
     fen = fen.split(" ")
     # Split position into ranks
     fen[0] = fen[0].split("/")
-
-
 
     # Position
     for rank in range(0, len(fen[0])):
@@ -218,7 +230,7 @@ def is_dest(board_data : BoardData, moves: list[Move], target: list[int]) -> boo
 
 def is_piece(board_data: BoardData, pos: Coordinate, piece: int):
     try:
-        if board_data.board[pos.y][pos.x].type == piece:
+        if p_type == piece:
             return True
     except:
         pass
@@ -281,17 +293,17 @@ def find_king(board_data: BoardData) -> Optional[Coordinate]:
 
 def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     moves = []
-    # TODO: STOP REFERRING TO LIST SAVE VALUE INSTEAD 
+    p_type = board_data.board[pos.y][pos.x].type
 
     # If piece is of linear movement type, bishop, queen, rook
-    if  board_data.board[pos.y][pos.x].type in piece.LINEAR_MOVERS:
-        moves.append(get_linear_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[board_data.board[pos.y][pos.x].type]))
+    if  p_type in piece.LINEAR_MOVERS:
+        moves.append(get_linear_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[p_type]))
     # If piece is of singular movement type, king horse
-    elif board_data.board[pos.y][pos.x].type in piece.SINGULAR_MOVERS:
-        moves.append(get_singular_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[board_data.board[pos.y][pos.x].type]))
+    elif p_type in piece.SINGULAR_MOVERS:
+        moves.append(get_singular_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[p_type]))
 
     # If piece is a pawn
-    elif board_data.board[pos.y][pos.x].type == piece.PAWN:
+    elif p_type == piece.PAWN:
         target_y = pos.y+piece.PAWN_MOVEMENT[board_data.active][0]    
         pawn_moves = []
            
@@ -325,10 +337,19 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
         else:
             moves.append(pawn_moves)
                     
-                
     # Castles
-    else:
-        pass
+    if p_type == piece.KING:
+        # QUEENSIDE
+        if board_data.castles[board_data.active][0]:
+            # Check if the dest is actually free ->
+            moves.append(QueenSideCastles())
+            
+        if board_data.castles[board_data.active][1]:
+            moves.append(KingSideCastles())
+
+            
+        
+        
 
     # Check for checks
     moves = flatten(moves)
