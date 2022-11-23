@@ -40,17 +40,22 @@ class Replace():
         self.dest   = dest
         self.piece = dest_piece
         
-class Castles():
-    def __init__(self, origin: Coordinate):
-        self.origin = origin
-        self.dest = piece.cas
+class Castles(Move):
+    def __init__(self, origin: Coordinate,  dest:Coordinate):
+        super().__init__(origin, dest)
+
+    
         
-class QueenSideCastles():
-    def __init__(self):
-        pass
-class KingSideCastles():
-    def __init__(self):
-        pass
+class QueenSideCastles(Castles):
+    def __init__(self,  origin: Coordinate,  dest:Coordinate):
+        super().__init__(origin, dest)
+
+        
+class KingSideCastles(Castles):
+    def __init__(self,  origin: Coordinate,  dest:Coordinate):
+        super().__init__(origin, dest)
+
+
 
         
 
@@ -88,6 +93,11 @@ class BoardData():
             self.reset_en_passant()
 
         # Just apply the move
+        
+        if isinstance(move, Castles):
+            # Find out wich castles
+            self.board[move.dest.y][move.dest.x] = 
+        
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
@@ -288,6 +298,14 @@ def find_king(board_data: BoardData) -> Optional[Coordinate]:
                 if board_data.board[i][j].type == piece.KING and  board_data.board[i][j].color == board_data.active:
                     return Coordinate(i, j)
     return None
+def contains_piece(board_data: BoardData, lis : List[Move], piece: int):
+    for move in lis:
+        if board_data[move.origin.y][move.origin.x] == piece:
+            return True
+    return False
+            
+        
+
 
 
 
@@ -341,11 +359,15 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     if p_type == piece.KING:
         # QUEENSIDE
         if board_data.castles[board_data.active][0]:
-            # Check if the dest is actually free ->
-            moves.append(QueenSideCastles())
+            # IF no pieces 
+            lefts = keep_applying(board_data, pos, [-1, 0])
+            
+            
+            moves.append(QueenSideCastles(Coordinate(piece.CASTLE_ROW[board_data.active], 4), Coordinate(piece.CASTLE_ROW[board_data.active], 0)))
             
         if board_data.castles[board_data.active][1]:
-            moves.append(KingSideCastles())
+            # If no pieces block
+            moves.append(KingSideCastles(Coordinate(piece.CASTLE_ROW[board_data.active], 4), Coordinate(piece.CASTLE_ROW[board_data.active], 7)))
 
             
         
