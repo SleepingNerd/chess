@@ -19,6 +19,8 @@ class Board():
         self.capture_overlay.fill((200, 100, 100, 200))
         self.promotion_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
         self.promotion_overlay.fill((100, 200, 50, 40))
+        self.castles_overlay = pygame.Surface(self.square_size, pygame.SRCALPHA)
+        self.castles_overlay.fill((255,50, 50, 150))
 
 
 
@@ -56,8 +58,12 @@ class Board():
             elif isinstance(move, engine.Promotion):
                 self.surface.blit(self.promotion_overlay, move_dest)
                 i += 3
+            elif isinstance(move, engine.Castles):
+                self.surface.blit(self.castles_overlay, move_dest)
+
             elif isinstance(move, engine.Move):
                 self.surface.blit(self.legal_move_overlay, move_dest)
+            
 
         for y in range(0, len(self.board_data.board[0])):
             for x in range(0, len(self.board_data.board[1])):

@@ -44,6 +44,7 @@ class Human(Player):
                     elif move.type == p_type:
                         board_data.apply_move(move)
                 else:
+                    
                     board_data.apply_move(move)
                     self.reset()
                     return True

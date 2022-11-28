@@ -40,9 +40,10 @@ class Replace():
         self.dest   = dest
         self.piece = dest_piece
         
-class Castles(Move):
+class Castles():
     def __init__(self, origin: Coordinate,  dest:Coordinate):
-        super().__init__(origin, dest)
+        self.origin = origin
+        self.dest   = dest
 
     
         
@@ -93,15 +94,17 @@ class BoardData():
             self.reset_en_passant()
 
         # Just apply the move
-        
-        if isinstance(move, Castles):
-            # Find out wich castles
-            pass
-            
-        
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
+        elif isinstance(move, KingSideCastles):
+            self.board[move.origin.y][6] = piece.Piece(self.active, piece.KING)
+            self.board[move.origin.y][5] = piece.Piece(self.active, piece.ROOK)
+            self.board[move.origin.y][move.origin.x] = piece.EMPTY
+
+        elif isinstance(move, QueenSideCastles):
+            pass
+            
             
         #  If it could promote
         if isinstance(move, Promotion):
@@ -142,6 +145,8 @@ def readfen(fen: str) -> BoardData:
         if ch != '-':
             i = piece.CH_TO_CASTLES[ch]
             board_data.castles[i[0]][i[1]] = True
+            
+    print(board_data.castles)
 
     # If there's a possible en passant target
     if fen[3] != '-':
@@ -371,20 +376,13 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
                     
     # Castles
     if p_type == piece.KING:
-        row = piece.CASTLE_ROW[board_data.active]
         # QUEENSIDE
-        if board_data.castles[board_data.active][0]:
-            # IF no pieces block There and  one of left 2 ight are blocked
-            if  keep_applying(board_data, pos, [-1, 0])
-            if in_check(board_data, Coordinate(row, move.origin-1)) == False and in_check(board_data, Coordinate(row, move.origin-1)) == False:
-                
+        if board_data.castles[board_data.active][0]:            
+            moves.append(QueenSideCastles(pos, Coordinate(pos.y, 1)))
 
-            
-            moves.append(QueenSideCastles(Coordinate(row, 4), Coordinate(row, 0)))
-            
         if board_data.castles[board_data.active][1]:
             # If no pieces block
-            moves.append(KingSideCastles(Coordinate(row, 4), Coordinate(row, 7)))
+            moves.append(KingSideCastles(pos, Coordinate(pos.y, 6)))
 
             
         
@@ -400,9 +398,8 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
             kpos = Coordinate(move.dest.y, move.dest.x)
         
         if in_check(apply_move(board_data,move), kpos) == False:
-            
-                
             legal_moves.append(move)
+        
 
 
     return legal_moves
