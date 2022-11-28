@@ -96,7 +96,8 @@ class BoardData():
         
         if isinstance(move, Castles):
             # Find out wich castles
-            self.board[move.dest.y][move.dest.x] = 
+            pass
+            
         
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
@@ -254,7 +255,18 @@ def is_color(board_data: BoardData, pos: Coordinate, color: int):
         pass
     return False
 
+def  keep_applying_for_check(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):
+    y = start.y + movement_pattern[0]
+    x = start.x  + movement_pattern[1]
+    while y < 8 and y > -1 and x < 8 and x > -1:
+        if in_check(board_data, Coordinate(y, x)):
+             return True
+        x +=movement_pattern[1]
+        y +=movement_pattern[0]
+    return False
+
 def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):
+
     moves = []
     y = start.y + movement_pattern[0]
     x = start.x  + movement_pattern[1]
@@ -298,11 +310,13 @@ def find_king(board_data: BoardData) -> Optional[Coordinate]:
                 if board_data.board[i][j].type == piece.KING and  board_data.board[i][j].color == board_data.active:
                     return Coordinate(i, j)
     return None
-def contains_piece(board_data: BoardData, lis : List[Move], piece: int):
+def contains_piece(board_data: BoardData, lis : list[Move], piece: int):
     for move in lis:
         if board_data[move.origin.y][move.origin.x] == piece:
             return True
     return False
+
+
             
         
 
@@ -357,17 +371,20 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
                     
     # Castles
     if p_type == piece.KING:
+        row = piece.CASTLE_ROW[board_data.active]
         # QUEENSIDE
         if board_data.castles[board_data.active][0]:
-            # IF no pieces 
-            lefts = keep_applying(board_data, pos, [-1, 0])
+            # IF no pieces block There and  one of left 2 ight are blocked
+            if  keep_applying(board_data, pos, [-1, 0])
+            if in_check(board_data, Coordinate(row, move.origin-1)) == False and in_check(board_data, Coordinate(row, move.origin-1)) == False:
+                
+
             
-            
-            moves.append(QueenSideCastles(Coordinate(piece.CASTLE_ROW[board_data.active], 4), Coordinate(piece.CASTLE_ROW[board_data.active], 0)))
+            moves.append(QueenSideCastles(Coordinate(row, 4), Coordinate(row, 0)))
             
         if board_data.castles[board_data.active][1]:
             # If no pieces block
-            moves.append(KingSideCastles(Coordinate(piece.CASTLE_ROW[board_data.active], 4), Coordinate(piece.CASTLE_ROW[board_data.active], 7)))
+            moves.append(KingSideCastles(Coordinate(row, 4), Coordinate(row, 7)))
 
             
         
