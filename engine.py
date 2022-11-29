@@ -46,7 +46,6 @@ class Castles():
         self.dest   = dest
 
     
-        
 class QueenSideCastles(Castles):
     def __init__(self,  origin: Coordinate,  dest:Coordinate):
         super().__init__(origin, dest)
@@ -85,6 +84,8 @@ class BoardData():
     def reset_en_passant(self):
         self.en_passant = Coordinate(-100, -100)
     def apply_move(self, move: Move):
+        
+        
         # If it's a double hop set en passant square
         if isinstance(move, DoubleHop):
             self.en_passant = Coordinate(move.origin.y + piece.PAWN_MOVEMENT[self.active][0], move.origin.x)
@@ -92,18 +93,40 @@ class BoardData():
             if isinstance(move, EnPassant):
                 self.board[move.captured.y][move.captured.x] = piece.EMPTY
             self.reset_en_passant()
+            
+        if self.board[move.origin.y][move.origin.x].type == piece.KING:
+            self.castles[self.active] = [False, False]
+        elif self.board[move.origin.y][move.origin.x].type == piece.ROOK:
+            if move.origin.x in piece.ROOK_X_TO_CASTLES.keys():
+                self.castles[self.active][piece.ROOK_X_TO_CASTLES[move.origin.x]]=False
+        # TODO: CAPTURE = NO CASTLO
+
+                
+                
+            
+            
 
         # Just apply the move
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
-        elif isinstance(move, KingSideCastles):
+            
+        if isinstance(move, KingSideCastles):
             self.board[move.origin.y][6] = piece.Piece(self.active, piece.KING)
             self.board[move.origin.y][5] = piece.Piece(self.active, piece.ROOK)
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
+            self.board[move.origin.y][7] = piece.EMPTY
+            self.castles[self.active][1] = True
 
+            
+            
         elif isinstance(move, QueenSideCastles):
-            pass
+            self.board[move.origin.y][2] = piece.Piece(self.active, piece.KING)
+            self.board[move.origin.y][3] = piece.Piece(self.active, piece.ROOK)
+            self.board[move.origin.y][move.origin.x] = piece.EMPTY
+            self.board[move.origin.y][0] = piece.EMPTY
+            self.castles[self.active][0] = True
+
             
             
         #  If it could promote
@@ -260,22 +283,22 @@ def is_color(board_data: BoardData, pos: Coordinate, color: int):
         pass
     return False
 
-def  keep_applying_for_check(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):
+def  keep_applying_for_check(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int], x_limits = [-1, 8], y_limits = [-1, 8]):
     y = start.y + movement_pattern[0]
     x = start.x  + movement_pattern[1]
-    while y < 8 and y > -1 and x < 8 and x > -1:
+    while y < y_limits[1] and y > y_limits[0] and x < x_limits[1] and x > x_limits[0]:
         if in_check(board_data, Coordinate(y, x)):
              return True
         x +=movement_pattern[1]
         y +=movement_pattern[0]
     return False
 
-def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int]):
+def  keep_applying(board_data: BoardData, start: Coordinate, movement_pattern: tuple[int, int], x_limits = [-1, 8], y_limits = [-1, 8]):
 
     moves = []
     y = start.y + movement_pattern[0]
     x = start.x  + movement_pattern[1]
-    while y < 8 and y > -1 and x < 8 and x > -1:
+    while y < y_limits[1] and y > y_limits[0] and x < x_limits[1] and x > x_limits[0]:
         state = is_capture(board_data, Coordinate(y,x))
         if state == piece.BLOCKED:
             return moves
@@ -377,8 +400,10 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
     # Castles
     if p_type == piece.KING:
         # QUEENSIDE
-        if board_data.castles[board_data.active][0]:            
-            moves.append(QueenSideCastles(pos, Coordinate(pos.y, 1)))
+        if board_data.castles[board_data.active][0]:  
+            # If it's blocked   
+            if  len(keep_applying(board_data, pos, [0,-1], [0, 8])) == 3:
+                moves.append(QueenSideCastles(pos, Coordinate(pos.y, 1)))
 
         if board_data.castles[board_data.active][1]:
             # If no pieces block

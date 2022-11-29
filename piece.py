@@ -34,6 +34,7 @@ CH_TO_INDEX = {"a":0 , "b": 1, "c" : 2, "d" : 3, "e" : 4, "f" : 5, "g" : 6, "h":
 CASTLE_ROW = {WHITE: 0, BLACK: 7}
 # Q FIRST A
 CASTLES_SQUARE = {0: [0, 1] ,1:[6, 7]}
+ROOK_X_TO_CASTLES = {0: 0, 7:1}
 
 # Y IS ALWAYS FIRST
 PIECE_TO_MOVEMENT = {ROOK: [[1, 0]], KNIGHT: [[1,2]], BISHOP: [[1,1]], QUEEN:[[1, 0], [1,1]], KING: [[1, 0], [1,1]]}
