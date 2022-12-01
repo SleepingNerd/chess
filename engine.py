@@ -44,7 +44,6 @@ class Castles():
     def __init__(self, origin: Coordinate,  dest:Coordinate):
         self.origin = origin
         self.dest   = dest
-
     
 class QueenSideCastles(Castles):
     def __init__(self,  origin: Coordinate,  dest:Coordinate):
@@ -54,11 +53,7 @@ class QueenSideCastles(Castles):
 class KingSideCastles(Castles):
     def __init__(self,  origin: Coordinate,  dest:Coordinate):
         super().__init__(origin, dest)
-
-
-
         
-
 class BoardData():
     """
     Represents all data of a chess board
@@ -94,18 +89,18 @@ class BoardData():
                 self.board[move.captured.y][move.captured.x] = piece.EMPTY
             self.reset_en_passant()
             
+        # Castles will become impossible if that rook is taken, that rook moves, or the king moves
+
         if self.board[move.origin.y][move.origin.x].type == piece.KING:
             self.castles[self.active] = [False, False]
         elif self.board[move.origin.y][move.origin.x].type == piece.ROOK:
-            if move.origin.x in piece.ROOK_X_TO_CASTLES.keys():
-                self.castles[self.active][piece.ROOK_X_TO_CASTLES[move.origin.x]]=False
-        # TODO: CAPTURE = NO CASTLO
-
-                
-                
+            if move.origin.x in piece.ROOK_X_TO_CASTLES.keys() and move.origin.y == piece.CASTLE_ROW[self.active]:
+                self.castles[self.active][piece.ROOK_X_TO_CASTLES[move.origin.x] ]= False
+        if move.dest.y == piece.CASTLE_ROW[piece.ACTIVE_TO_INACTIVE[self.active]] and move.origin.x in piece.ROOK_X_TO_CASTLES.keys():
+            self.castles[piece.ACTIVE_TO_INACTIVE[self.active]][piece.ROOK_X_TO_CASTLES[move.origin.x]] = False
             
             
-
+            
         # Just apply the move
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
@@ -118,17 +113,13 @@ class BoardData():
             self.board[move.origin.y][7] = piece.EMPTY
             self.castles[self.active][1] = True
 
-            
-            
         elif isinstance(move, QueenSideCastles):
             self.board[move.origin.y][2] = piece.Piece(self.active, piece.KING)
             self.board[move.origin.y][3] = piece.Piece(self.active, piece.ROOK)
             self.board[move.origin.y][move.origin.x] = piece.EMPTY
             self.board[move.origin.y][0] = piece.EMPTY
             self.castles[self.active][0] = True
-
-            
-            
+                    
         #  If it could promote
         if isinstance(move, Promotion):
             self.board[move.dest.y][move.dest.x].type = move.type
@@ -399,15 +390,20 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
                     
     # Castles
     if p_type == piece.KING:
-        # QUEENSIDE
-        if board_data.castles[board_data.active][0]:  
-            # If it's blocked   
-            if  len(keep_applying(board_data, pos, [0,-1], [0, 8])) == 3:
-                moves.append(QueenSideCastles(pos, Coordinate(pos.y, 1)))
+        if in_check(board_data, pos) == False:
+            # QUEENSIDE
+            if board_data.castles[board_data.active][0]:  
+                # If it's blocked   
+                if  len(keep_applying(board_data, pos, [0,-1], [0, 8])) == 3:
+                    moves.append(QueenSideCastles(pos, Coordinate(pos.y, 1)))
 
-        if board_data.castles[board_data.active][1]:
-            # If no pieces block
-            moves.append(KingSideCastles(pos, Coordinate(pos.y, 6)))
+            if board_data.castles[board_data.active][1]:
+                # If no pieces block
+                print(len(keep_applying(board_data, pos, [0,1], [0, 8])))
+                if  len(keep_applying(board_data, pos, [0,1], [0, 8])) == 2:
+                    moves.append(KingSideCastles(pos, Coordinate(pos.y, 6)))
+
+
 
             
         
