@@ -386,14 +386,16 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
                     
     # Castles
     if p_type == piece.KING:
+        # If he's not in check
         if in_check(board_data, pos, False) == False:
             # QUEENSIDE
-            if board_data.castles[board_data.active][0]:
-                # If it's blocked   
+            if board_data.castles[board_data.active][0] and not in_check(board_data, Coordinate(pos.y, pos.x-1), False):
+                # If it's not blocked   and the left square isn't in check
                 if  len(keep_applying(board_data, pos, [0,-1], [0, 8])) == 3:
                     moves.append(QueenSideCastles(pos, Coordinate(pos.y, 1)))
+                    
 
-            if board_data.castles[board_data.active][1]:
+            if board_data.castles[board_data.active][1] and not in_check(board_data, Coordinate(pos.y, pos.x+1), False):
                 # If no pieces block
                 if  len(keep_applying(board_data, pos, [0,1], [0, 8])) == 2:
                     moves.append(KingSideCastles(pos, Coordinate(pos.y, 6)))
@@ -412,11 +414,16 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
         kpos = king_origin
         if board_data.board[move.origin.y][move.origin.x].type == piece.KING:
             kpos = Coordinate(move.dest.y, move.dest.x)
-        
+            if isinstance(move, Castles):
+                if isinstance(move, QueenSideCastles):
+                    kpos_x = piece.KING_X_AFTER_CASTLES[0]
+                                      
+                else:
+                    kpos_x = piece.KING_X_AFTER_CASTLES[1]
+                kpos = Coordinate(kpos.y, kpos_x)
+
         if in_check(apply_move(board_data,move), kpos) == False:
             legal_moves.append(move)
-        
-
 
     return legal_moves
 
