@@ -24,8 +24,10 @@ class Human(Player):
         if  board_data.board[pos.y][pos.x] != piece.EMPTY:
             # If of his color
             if board_data.board[pos.y][pos.x].color == board_data.active:
+
                 self.selected = pos
                 self.legal_moves = engine.get_piece_moves(board_data, self.selected)
+
             # If piece of other color
             else:
                 self.apply(board_data, pos)

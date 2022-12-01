@@ -79,8 +79,6 @@ class BoardData():
     def reset_en_passant(self):
         self.en_passant = Coordinate(-100, -100)
     def apply_move(self, move: Move):
-        
-        
         # If it's a double hop set en passant square
         if isinstance(move, DoubleHop):
             self.en_passant = Coordinate(move.origin.y + piece.PAWN_MOVEMENT[self.active][0], move.origin.x)
@@ -90,7 +88,6 @@ class BoardData():
             self.reset_en_passant()
             
         # Castles will become impossible if that rook is taken, that rook moves, or the king moves
-
         if self.board[move.origin.y][move.origin.x].type == piece.KING:
             self.castles[self.active] = [False, False]
         elif self.board[move.origin.y][move.origin.x].type == piece.ROOK:
@@ -98,9 +95,7 @@ class BoardData():
                 self.castles[self.active][piece.ROOK_X_TO_CASTLES[move.origin.x] ]= False
         if move.dest.y == piece.CASTLE_ROW[piece.ACTIVE_TO_INACTIVE[self.active]] and move.origin.x in piece.ROOK_X_TO_CASTLES.keys():
             self.castles[piece.ACTIVE_TO_INACTIVE[self.active]][piece.ROOK_X_TO_CASTLES[move.origin.x]] = False
-            
-            
-            
+        
         # Just apply the move
         if isinstance(move, Move):
             self.board[move.dest.y][move.dest.x] = self.board[move.origin.y][move.origin.x]
@@ -126,6 +121,7 @@ class BoardData():
             
         # Flip color
         self.active = piece.ACTIVE_TO_INACTIVE[self.active]
+
 
 def readfen(fen: str) -> BoardData:
     """
@@ -160,7 +156,6 @@ def readfen(fen: str) -> BoardData:
             i = piece.CH_TO_CASTLES[ch]
             board_data.castles[i[0]][i[1]] = True
             
-    print(board_data.castles)
 
     # If there's a possible en passant target
     if fen[3] != '-':
@@ -197,9 +192,6 @@ def every_direction(func, *args):
 @every_direction
 def get_linear_moves(board_data : BoardData, origin: Coordinate, movement_pattern: tuple[int, int]) -> list[Move]:
     return keep_applying(board_data, origin, movement_pattern)
-#
-
-
 
 #  Horse, king,
 @every_direction
@@ -217,10 +209,11 @@ def get_singular_moves(board_data: BoardData, origin: Coordinate,movement_patter
         return []
 
 # Checks if inactive color is in check
-def in_check(board_data : BoardData, origin: Coordinate) -> bool:
-
-    # Become color that just moved or might be in check
-    board_data.active = piece.ACTIVE_TO_INACTIVE[board_data.active]
+def in_check(board_data : BoardData, origin: Coordinate, check_inactive=True) -> bool:
+    original_color = board_data.active
+    if check_inactive:
+        # Become color that just moved or might be in check
+        board_data.active = piece.ACTIVE_TO_INACTIVE[board_data.active]
 
     # Collect rook moves from king
     rook_moves   =  flatten(get_linear_moves(board_data, origin, piece.PIECE_TO_MOVEMENT[piece.ROOK]))
@@ -241,13 +234,16 @@ def in_check(board_data : BoardData, origin: Coordinate) -> bool:
     if is_dest(board_data, king_moves, [piece.KING]):
             return True
     
-    target_y = origin.y - piece.PAWN_MOVEMENT[piece.ACTIVE_TO_INACTIVE[board_data.active]][0]
-    if is_piece(board_data, Coordinate(target_y, origin.x + 1), piece.PAWN) and is_color(board_data, Coordinate(target_y, origin.x + 1), piece.ACTIVE_TO_INACTIVE[board_data.active]):
+    # Become color that just moved or might be in check
+    opposing_color = piece.ACTIVE_TO_INACTIVE[board_data.active]
+    board_data.active = original_color
+    target_y = origin.y - piece.PAWN_MOVEMENT[opposing_color][0]
+    
+    if is_piece(board_data, Coordinate(target_y, origin.x + 1), piece.PAWN) and is_color(board_data, Coordinate(target_y, origin.x + 1), opposing_color):
         return True
-    if is_piece(board_data, Coordinate(target_y, origin.x - 1), piece.PAWN) and is_color(board_data, Coordinate(target_y, origin.x - 1), piece.ACTIVE_TO_INACTIVE[board_data.active]):
+    if is_piece(board_data, Coordinate(target_y, origin.x - 1), piece.PAWN) and is_color(board_data, Coordinate(target_y, origin.x - 1), opposing_color):
         return True
     return False
-
 
 
 
@@ -260,7 +256,7 @@ def is_dest(board_data : BoardData, moves: list[Move], target: list[int]) -> boo
 
 def is_piece(board_data: BoardData, pos: Coordinate, piece: int):
     try:
-        if p_type == piece:
+        if board_data.board[pos.y][pos.x].type == piece:
             return True
     except:
         pass
@@ -390,16 +386,15 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
                     
     # Castles
     if p_type == piece.KING:
-        if in_check(board_data, pos) == False:
+        if in_check(board_data, pos, False) == False:
             # QUEENSIDE
-            if board_data.castles[board_data.active][0]:  
+            if board_data.castles[board_data.active][0]:
                 # If it's blocked   
                 if  len(keep_applying(board_data, pos, [0,-1], [0, 8])) == 3:
                     moves.append(QueenSideCastles(pos, Coordinate(pos.y, 1)))
 
             if board_data.castles[board_data.active][1]:
                 # If no pieces block
-                print(len(keep_applying(board_data, pos, [0,1], [0, 8])))
                 if  len(keep_applying(board_data, pos, [0,1], [0, 8])) == 2:
                     moves.append(KingSideCastles(pos, Coordinate(pos.y, 6)))
 
