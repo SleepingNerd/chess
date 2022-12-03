@@ -81,6 +81,7 @@ class BasicBot(Bot):
         self.killer_moves = [[], []]
     @engine.debug_time
     def move(self, board_data: engine.BoardData, depth = None) -> Optional[engine.Move]:
+        self.killer_moves =  [[], []]
         if depth == None:
             depth = self.depth
         moves = engine.get_moves(board_data)
@@ -99,7 +100,7 @@ class BasicBot(Bot):
                         current_choice = move                  
                     alpha = max(alpha, evaluation)
                     if beta <= alpha:
-                        self.killer_moves[self.active].append(move)
+                        self.killer_moves[board_data.active].append(move)
                         break  
                     
                 return current_choice       
@@ -114,7 +115,7 @@ class BasicBot(Bot):
 
                     beta = min(beta, evaluation)
                     if beta <= alpha:
-                        self.killer_moves[self.active].append(move)
+                        self.killer_moves[board_data.active].append(move)
                         break   
                 return current_choice
         
@@ -129,28 +130,50 @@ class BasicBot(Bot):
             return self.evaluate(board_data)
         # White should try to get the HIGHEST value 
         elif board_data.active == piece.WHITE:
+            # Get moves and order them
             moves = engine.get_moves(board_data)
             moves = self.order(board_data, moves)
+            
+            # Set a maximum
             max_value = -math.inf
+            
+            # For every move
             for move in moves:
+                # Evaluate
                 evaluation = self.minimax(engine.apply_move(board_data, move), depth -1, alpha, beta)
+                
+                 # Overwrite node value
                 max_value = max(max_value, evaluation)
+                # Overwrite alpha (best position for white)
                 alpha = max(alpha, evaluation)
+                
+                # If beta is less than alpha (can only happen if beta)
                 if beta <= alpha:
-                    break         
+                    self.killer_moves[board_data.active].append(move)
+                    break
             return max_value   
         # Black should try to get the LOWEST value
         else:    
+            # Get moves and order them
             moves = engine.get_moves(board_data)
             moves = self.order(board_data, moves)
 
+            # Set a minimum
             min_value = math.inf
+            
+            # For every move
             for move in moves:
+                # Evaluate
                 evaluation = self.minimax(engine.apply_move(board_data, move), depth -1, alpha, beta)
+                
+                # Overwrite node value
                 min_value = min(min_value, evaluation)
+                
+                # Overwrite beta (worst position for white)
                 beta = min(beta, evaluation)
                 if beta <= alpha:
-                    break   
+                    self.killer_moves[board_data.active].append(move)
+                    break
             return min_value   
         
     """
@@ -164,15 +187,10 @@ class BasicBot(Bot):
         for y in range(0,8):
             for x in range(0, 8):
                 if isinstance(board_data.board[y][x], piece.Piece):
-                    is_white = (board_data.board[y][x].color == piece.WHITE)
-                    if board_data.board[y][x].type == piece.KING:
-                        pass
-                    
-                    else:
-                        weight = -1
-                        if is_white:
-                            weight = 1
-                        score += piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[y][x].type] * weight
+                    weight = -1
+                    if board_data.board[y][x].color == piece.WHITE:
+                        weight = 1
+                    score += piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[y][x].type] * weight
         return score
     
     def order(self, board_data: engine.BoardData, moves: list[engine.Move]):
