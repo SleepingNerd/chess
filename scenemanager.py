@@ -91,7 +91,7 @@ class SceneManager():
         # Player list, and portret ui
         self.portrets = "assets/images/ui/portrets/"+self.config["portrets"]+"/"
         self.portret_size = [75,75]
-        self.players = [player.Human(self.portrets + "human.png", self.portret_size, "Human", self.buttons_font, self.ui_text), player.RandomBot(self.portrets + "bot.png", self.portret_size, "Random", self.buttons_font, self.ui_text)]
+        self.players = [player.Human(self.portrets + "human.png", self.portret_size, "Human", self.buttons_font, self.ui_text), player.RandomBot(self.portrets + "bot.png", self.portret_size, "Random", self.buttons_font, self.ui_text), player.BasicBot(self.portrets + "bot.png", self.portret_size, "Dumbo", self.buttons_font, self.ui_text, False, 4)]
         self.player_index = 0
         self.active_players = [None, None]
         self.total_players = len(self.players)

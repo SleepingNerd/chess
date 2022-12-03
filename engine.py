@@ -1,6 +1,7 @@
 import piece
 import copy
 from typing import Optional
+import time
 
 def flatten(twodlist) -> list:
     result = []
@@ -13,6 +14,15 @@ def flatten(twodlist) -> list:
             result.append(lis)
     return result
 
+
+def debug_time(func):
+    def wrapper(*args, **kwargs):
+        first = time.time()
+        value = func(*args, **kwargs)
+        print(first - time.time())
+        return value
+    return wrapper
+    
 
 class Coordinate():
     def __init__(self, y, x):
@@ -170,14 +180,21 @@ def readfen(fen: str) -> BoardData:
 
 def every_direction(func, *args):
     def wrapper(board_data: BoardData, origin: Coordinate, movement_patterns: list[tuple[int, int]]):
-        combs = [[-1, 1, 1, -1], [1, -1, 1, -1]]
+        
+        combs = [[1, -1, 1, -1], [1, -1, -1, 1]]
         moves = []
         # For every movement pattern
         for pattern in movement_patterns:
             # Reversed
             for i in range(0,2):
                 # For every combination of negative and positive
-                for j in range(0, 4):
+                
+                start = 0
+                if pattern[0] == 0 or pattern[1]  == 0:
+                    start = 2
+                    
+                for j in range(start, 4):
+                    
                     moves.append(func(board_data, origin, (pattern[0]*combs[0][j], pattern[1]*combs[1][j])))
 
                 #
@@ -185,7 +202,9 @@ def every_direction(func, *args):
                     break;
                 # Reverse
                 pattern = [pattern[1], pattern[0]]
+                
         return flatten(moves)
+    
     return wrapper
 
 # For bishop, king (not castles tho), queen, rook
@@ -244,6 +263,18 @@ def in_check(board_data : BoardData, origin: Coordinate, check_inactive=True) ->
     if is_piece(board_data, Coordinate(target_y, origin.x - 1), piece.PAWN) and is_color(board_data, Coordinate(target_y, origin.x - 1), opposing_color):
         return True
     return False
+
+def has_no_moves(board_data : BoardData) -> bool:
+    if get_moves(board_data) ==[]:
+        return True
+    return False
+    
+
+def in_mate(board_data : BoardData, origin: Coordinate, check_inactive=True) -> bool:
+    if in_check(board_data, origin, check_inactive) and get_moves(board_data) == []:
+        return True
+
+
 
 
 
@@ -364,18 +395,24 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
                     moves.append(DoubleHop(pos,target_cord))
             
         # If he can capture left and en passant
+        x_dest = pos.x+1
         state=is_capture(board_data, Coordinate(target_y, pos.x+1))
-        if state == piece.CAPTURE:
-            pawn_moves.append(Capture(pos, Coordinate(target_y, pos.x + 1)))
-        elif state == piece.EN_PASSANT:
-            moves.append(EnPassant(pos, Coordinate(target_y, pos.x + 1), Coordinate(pos.y, pos.x + 1)))
+        if x_dest < 8:
+            if state == piece.CAPTURE:
+                pawn_moves.append(Capture(pos, Coordinate(target_y, x_dest)))
+            elif state == piece.EN_PASSANT:
+                moves.append(EnPassant(pos, Coordinate(target_y, x_dest), Coordinate(pos.y, x_dest)))
+                
         # Capture right and en passant
-        state=is_capture(board_data, Coordinate(target_y, pos.x-1))
-        if state == piece.CAPTURE:
-            pawn_moves.append(Capture(pos, Coordinate(target_y, pos.x -1)))
-        elif state == piece.EN_PASSANT:
-            moves.append(EnPassant(pos, Coordinate(target_y, pos.x - 1), Coordinate(pos.y, pos.x - 1)))
+        x_dest = pos.x-1
+        if not x_dest < 0:
+            state=is_capture(board_data, Coordinate(target_y, x_dest))
             
+            if state == piece.CAPTURE:
+                pawn_moves.append(Capture(pos, Coordinate(target_y, x_dest)))
+            elif state == piece.EN_PASSANT:
+                moves.append(EnPassant(pos, Coordinate(target_y, x_dest), Coordinate(pos.y, x_dest)))
+                
         # If pawn has reached promotion square
         if target_y == piece.PAWN_PROMOTE_POS[board_data.active]:
             for move in pawn_moves:
@@ -424,7 +461,7 @@ def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
 
         if in_check(apply_move(board_data,move), kpos) == False:
             legal_moves.append(move)
-
+        
     return legal_moves
 
 
@@ -457,12 +494,5 @@ def get_moves(board_data: BoardData):
                     # If piece is of active color
                     if board_data.board[y][x].color == board_data.active:
                         moves.append(get_piece_moves(board_data, Coordinate(y, x)))
-
-
-    # Check for castles (or skips if king was in check)
-
-    # Check for en passants (and cancels them out if it results in a check afterwards)
-    # Check for promotions, and double pawn movements (and cancels them out if it results in a check afterwards)
-
 
     return flatten(moves)

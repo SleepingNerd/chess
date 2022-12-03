@@ -1,8 +1,12 @@
 import pygame
 import engine
+import math
 import piece
 from random import choice
 from typing import Optional
+from random import shuffle
+
+
 class Player():
     def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False):
         self.name = name
@@ -56,12 +60,124 @@ class Human(Player):
         self.apply(board_data, self.promotion, p_type)
     
     
-class RandomBot(Player):
-    def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False, dept=0):
+    
+class Bot(Player):
+    def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False, depth=0):
         super().__init__(avatar_img, avatar_img_size,name, font, font_color, antialiasing)
+        self.depth = depth
+    def move(self, board_data: engine.BoardData) -> Optional[engine.Move]:
+        pass
+    
+class RandomBot(Bot):        
     def move(self, board_data: engine.BoardData) -> Optional[engine.Move]:
         moves = engine.get_moves(board_data)
         if moves == []:
             return None
         return choice(moves)
+    
+class BasicBot(Bot):
+    @engine.debug_time
+    def move(self, board_data: engine.BoardData, depth = None) -> Optional[engine.Move]:
+        if depth == None:
+            depth = self.depth
+        moves = engine.get_moves(board_data)
+        shuffle(moves)
+        current_choice = None
+        alpha = -math.inf
+        beta =  math.inf
+        
+        if depth > 0:
+            if board_data.active == piece.WHITE:
+                max_value = -math.inf
+                for move in moves:
+                    evaluation = self.minimax(engine.apply_move(board_data,move), depth-1, alpha, beta)  
+                    if max_value < evaluation:
+                        max_value = evaluation  
+                        current_choice = move                  
+                    alpha = max(alpha, evaluation)
+                    if beta <= alpha:
+                        break  
+                return current_choice       
+            
+            else:
+                min_value = math.inf
+                for move in moves:
+                    evaluation = self.minimax(engine.apply_move(board_data, move), depth -1, alpha, beta)
+                    if min_value > evaluation:
+                        min_value = evaluation
+                        current_choice = move
+
+                    beta = min(beta, evaluation)
+                    if beta <= alpha:
+                        break   
+                return current_choice
+        
+
+        
+                
+                    
+    ""
+    def minimax(self, board_data: engine.BoardData, depth, alpha, beta) -> int:
+        #
+        if depth == 0:
+            return self.evaluate(board_data)
+        # White should try to get the HIGHEST value 
+        elif board_data.active == piece.WHITE:
+            moves = engine.get_moves(board_data)
+            shuffle(moves)
+            max_value = -math.inf
+            for move in moves:
+                evaluation = self.minimax(engine.apply_move(board_data, move), depth -1, alpha, beta)
+                max_value = max(max_value, evaluation)
+                alpha = max(alpha, evaluation)
+                if beta <= alpha:
+                    break         
+            return max_value   
+        # Black should try to get the LOWEST value
+        else:    
+            moves = engine.get_moves(board_data)
+            shuffle(moves)
+
+            min_value = math.inf
+            for move in moves:
+                evaluation = self.minimax(engine.apply_move(board_data, move), depth -1, alpha, beta)
+                min_value = min(min_value, evaluation)
+                beta = min(beta, evaluation)
+                if beta <= alpha:
+                    break   
+            return min_value   
+        
+    """
+    Looks at how good the current position is,
+    Positive = better for white, 
+    0 = neutral,
+    negative, better for black
+    """
+    def evaluate(self, board_data: engine.BoardData) -> int:
+        score = 0
+        for y in range(0,8):
+            for x in range(0, 8):
+                if isinstance(board_data.board[y][x], piece.Piece):
+                    is_white = (board_data.board[y][x].color == piece.WHITE)
+                    if board_data.board[y][x].type == piece.KING:
+                        pass
+                    
+                    else:
+                        weight = -1
+                        if is_white:
+                            weight = 1
+                        score += piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[y][x].type] * weight
+        return score
+                            
+                        
+                
+                        
+                        
+                        
+            
+        
+        
+
+    
+    
     
