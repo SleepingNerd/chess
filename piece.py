@@ -1,3 +1,4 @@
+from math import  inf
 #
 class Piece():
     def __init__(self, color, type):
@@ -50,7 +51,7 @@ PAWN_PROMOTE_POS = {WHITE: 7, BLACK: 0}
 ACTIVE_TO_INACTIVE = {BLACK: WHITE, WHITE: BLACK}
 
 # Bot stuff
-PIECE_TO_CLASSICAL_VALUE = {ROOK: 5, QUEEN: 10, PAWN:1, BISHOP: 3, KNIGHT:3}
+PIECE_TO_CLASSICAL_VALUE = {ROOK: 5, QUEEN: 10, PAWN:1, BISHOP: 3, KNIGHT:3, KING: inf}
 
 
 #  CONSTANTS TO REPRESENT function returns i guess

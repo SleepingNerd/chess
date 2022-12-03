@@ -76,12 +76,15 @@ class RandomBot(Bot):
         return choice(moves)
     
 class BasicBot(Bot):
+    def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False, depth=0):
+        super().__init__(avatar_img, avatar_img_size,name, font, font_color, antialiasing, depth)
+        self.killer_moves = [[], []]
     @engine.debug_time
     def move(self, board_data: engine.BoardData, depth = None) -> Optional[engine.Move]:
         if depth == None:
             depth = self.depth
         moves = engine.get_moves(board_data)
-        shuffle(moves)
+        moves = self.first_order(board_data, moves)
         current_choice = None
         alpha = -math.inf
         beta =  math.inf
@@ -96,7 +99,9 @@ class BasicBot(Bot):
                         current_choice = move                  
                     alpha = max(alpha, evaluation)
                     if beta <= alpha:
+                        self.killer_moves[self.active].append(move)
                         break  
+                    
                 return current_choice       
             
             else:
@@ -109,6 +114,7 @@ class BasicBot(Bot):
 
                     beta = min(beta, evaluation)
                     if beta <= alpha:
+                        self.killer_moves[self.active].append(move)
                         break   
                 return current_choice
         
@@ -124,7 +130,7 @@ class BasicBot(Bot):
         # White should try to get the HIGHEST value 
         elif board_data.active == piece.WHITE:
             moves = engine.get_moves(board_data)
-            shuffle(moves)
+            moves = self.order(board_data, moves)
             max_value = -math.inf
             for move in moves:
                 evaluation = self.minimax(engine.apply_move(board_data, move), depth -1, alpha, beta)
@@ -136,7 +142,7 @@ class BasicBot(Bot):
         # Black should try to get the LOWEST value
         else:    
             moves = engine.get_moves(board_data)
-            shuffle(moves)
+            moves = self.order(board_data, moves)
 
             min_value = math.inf
             for move in moves:
@@ -168,16 +174,34 @@ class BasicBot(Bot):
                             weight = 1
                         score += piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[y][x].type] * weight
         return score
-                            
-                        
-                
-                        
-                        
-                        
+    
+    def order(self, board_data: engine.BoardData, moves: list[engine.Move]):
+        ls = [[], [], [], [], [], []]
+        
+        
             
-        
-        
+        for move in moves:
+            if isinstance(move, engine.Capture):
+                if piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[move.origin.y][move.origin.x].type] > piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[move.dest.y][move.dest.x].type]:
+                    ls[0].append(move)
+                elif piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[move.origin.y][move.origin.x].type] == piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[move.dest.y][move.dest.x].type]:
+                    ls[2].append(move)
+                else:
+                    ls[4].append(move)
+                break
+            
+            for kmove in self.killer_moves[board_data.active]:
+                if (move.dest.y == kmove.dest.y and move.dest.x == kmove.dest.x):
+                    ls[1].append(move)
+                    break
+                
+                elif (move.origin.y == kmove.origin.y and move.origin.x == kmove.origin.x):
+                    ls[3].append(move)
+                    break
 
-    
-    
-    
+            ls[5].append(move)
+                
+        return engine.flatten(ls)
+         
+    def first_order(self, board_data: engine.BoardData, moves: list[engine.Move]):
+        return self.order(board_data, moves)
