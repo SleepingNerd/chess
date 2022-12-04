@@ -172,7 +172,6 @@ class BasicBot(Bot):
                 # Overwrite beta (worst position for white)
                 beta = min(beta, evaluation)
                 if beta <= alpha:
-                    self.killer_moves[board_data.active].append(move)
                     break
             return min_value   
         
@@ -194,31 +193,13 @@ class BasicBot(Bot):
         return score
     
     def order(self, board_data: engine.BoardData, moves: list[engine.Move]):
-        ls = [[], [], [], [], [], []]
-        
-        
-            
+        ls = [[], []]
         for move in moves:
             if isinstance(move, engine.Capture):
-                if piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[move.origin.y][move.origin.x].type] > piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[move.dest.y][move.dest.x].type]:
-                    ls[0].append(move)
-                elif piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[move.origin.y][move.origin.x].type] == piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[move.dest.y][move.dest.x].type]:
-                    ls[2].append(move)
-                else:
-                    ls[4].append(move)
-                break
-            
-            for kmove in self.killer_moves[board_data.active]:
-                if (move.dest.y == kmove.dest.y and move.dest.x == kmove.dest.x):
-                    ls[1].append(move)
-                    break
-                
-                elif (move.origin.y == kmove.origin.y and move.origin.x == kmove.origin.x):
-                    ls[3].append(move)
-                    break
-
-            ls[5].append(move)
-                
+                ls[0].append(move)
+            else: 
+                ls[1].append(move)
+        
         return engine.flatten(ls)
          
     def first_order(self, board_data: engine.BoardData, moves: list[engine.Move]):

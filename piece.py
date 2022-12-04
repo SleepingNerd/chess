@@ -1,9 +1,12 @@
 from math import  inf
+
 #
 class Piece():
     def __init__(self, color, type):
         self.type = type
         self.color = color
+
+
 
 
 
