@@ -2,6 +2,7 @@ import piece
 import copy
 from typing import Optional
 import time
+import numpy as np
 
 def flatten(twodlist) -> list:
     result = []
@@ -72,8 +73,8 @@ class BoardData():
         self.empty_board()
 
     def empty_board(self):
-        # Empty board
         self.board = []
+        # Empty board
         for i in range(0, 8):
             self.board.append([])
             for j in range(0, 8):

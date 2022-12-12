@@ -75,6 +75,26 @@ class RandomBot(Bot):
             return None
         return choice(moves)
     
+"""
+DEPTH 2 2 MOVES BOTS -> 
+-61.115899324417114
+-2.994014024734497
+-7.587989330291748
+-4.615025520324707
+____________________________________________________
+-4.371410369873047
+-35.51592993736267
+-22.456780433654785
+__________________________________________________________
+-4.3600013256073
+-34.29758954048157
+-22.33568811416626
+_____________________________________________________________
+-4.373029708862305
+-29.864010334014893
+-21.820008993148804
+"""
+    
 class BasicBot(Bot):
     def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False, depth=0):
         super().__init__(avatar_img, avatar_img_size,name, font, font_color, antialiasing, depth)
@@ -172,6 +192,7 @@ class BasicBot(Bot):
                 # Overwrite beta (worst position for white)
                 beta = min(beta, evaluation)
                 if beta <= alpha:
+                    self.killer_moves[board_data.active].append(move)
                     break
             return min_value   
         
@@ -193,12 +214,18 @@ class BasicBot(Bot):
         return score
     
     def order(self, board_data: engine.BoardData, moves: list[engine.Move]):
-        ls = [[], []]
+        ls = [[], [], []]
         for move in moves:
             if isinstance(move, engine.Capture):
                 ls[0].append(move)
+           
             else: 
-                ls[1].append(move)
+                for kmove in self.killer_moves[board_data.active]:
+                    if move.origin.x == kmove.origin.x and move.origin.y == kmove.origin.y and move.dest.x == kmove.dest.x and move.dest.y == kmove.dest.y:
+                        ls[1].append(move)
+                        break
+                else:
+                    ls[2].append(move)
         
         return engine.flatten(ls)
          
