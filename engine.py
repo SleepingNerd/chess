@@ -2,7 +2,6 @@ import piece
 import copy
 from typing import Optional
 import time
-import numpy as np
 
 def flatten(twodlist) -> list:
     result = []
@@ -23,6 +22,9 @@ def debug_time(func):
         print(first - time.time())
         return value
     return wrapper
+    
+    
+    
     
 
 class Coordinate():

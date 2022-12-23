@@ -7,6 +7,11 @@ class Piece():
         self.color = color
 
 
+    
+    
+    
+
+
 
 
 
