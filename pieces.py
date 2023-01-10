@@ -1,6 +1,6 @@
 import piece
-from engine import BoardData, Coordinate, get_linear_moves, get_singular_moves, is_piece, is_color, is_capture
-from engine import Move, DoubleHop, Capture, EnPassant, Promotion
+from engine import BoardData, Coordinate, get_linear_moves, get_singular_moves, is_piece, is_color, is_capture, in_check, keep_applying
+from engine import Move, DoubleHop, Capture, EnPassant, Promotion, QueenSideCastles, KingSideCastles
 import piece
 
 # NOTE: [y, x] when representing a movement_pattern
@@ -48,6 +48,7 @@ class ExceptionPiece(Piece):
 class Empty(Piece):
     movement_patterns = []
     type =  EMPTY
+    
 class Queen(LinearPiece):
     movement_patterns = [[1, 0], [1,1]]
     type = QUEEN
@@ -57,39 +58,35 @@ class Rook(LinearPiece):
     type = ROOK
 
 class Bishop(LinearPiece):
-    movement_patterns = [[1,1]]   
+    movement_patterns = [[1,1]]
     type = BISHOP
      
 class Knight(SingularPiece):
-    movement_patterns = [[1,2]]
+    movement_patterns = [[2,1]]
     type = KNIGHT
     
 class King(ExceptionPiece):
-    movement_patterns = [[1,1]. [1,0]]
     type = KING
-
-
+    
+    
     def get_moves(self, board_data: BoardData, origin: Coordinate):
         moves = get_linear_moves(board_data, origin, self.movement_patterns)
         if in_check(board_data, origin, False) == False:
                     # QUEENSIDE
-                    if board_data.castles[board_data.active][0] and not in_check(board_data, Coordinate(pos.y, pos.x-1), False):
+                    if board_data.castles[board_data.active][0] and not in_check(board_data, Coordinate(origin.y, origin.x-1), False):
                         # If it's not blocked   and the left square isn't in check
-                        if  len(keep_applying(board_data, pos, [0,-1], [0, 8])) == 3:
-                            moves.append(QueenSideCastles(pos, Coordinate(pos.y, 1)))
+                        if  len(keep_applying(board_data, origin, [0,-1], [0, 8])) == 3:
+                            moves.append(QueenSideCastles(origin, Coordinate(origin.y, 1)))
                             
 
-                    if board_data.castles[board_data.active][1] and not in_check(board_data, Coordinate(pos.y, pos.x+1), False):
+                    if board_data.castles[board_data.active][1] and not in_check(board_data, Coordinate(.y, origin.x+1), False):
                         # If no pieces block
-                        if  len(keep_applying(board_data, pos, [0,1], [0, 8])) == 2:
-                            moves.append(KingSideCastles(pos, Coordinate(pos.y, 6)))
-
-
-    
+                        if  len(keep_applying(board_data, origin, [0,1], [0, 8])) == 2:
+                            moves.append(KingSideCastles(origin, Coordinate(origin.y, 6)))
+                            
 class Pawn(ExceptionPiece):
     movement_patterns = {WHITE: [1, 0], BLACK:[-1, 0]}
     type = piece.PAWN
-
     def __init__(self, color, type):
         super().__init__(color)
     def get_moves(self, board_data: BoardData, origin: Coordinate):
@@ -141,10 +138,3 @@ class Pawn(ExceptionPiece):
                     promotion_moves.append(Promotion(move.origin, move.dest, i)) 
             return promotion_moves
         return moves
-    
-
-       
-        
-        
-    
-    

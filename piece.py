@@ -34,8 +34,7 @@ EMPTY = 0
 COLOR_TO_WORD = ["White", "Black"]
 # 0 For queenside- 1 for kingside
 CH_TO_CASTLES = {"Q":[WHITE, 0],"K":[WHITE, 1], "q":[BLACK, 0], "k":[BLACK, 1]}
-CH_TO_PIECE = {"p": Piece(BLACK, PAWN), "r": Piece(BLACK, ROOK), "n": Piece(BLACK, KNIGHT), "b": Piece(BLACK, BISHOP), "k": Piece(BLACK, KING), "q": Piece(
-    BLACK, QUEEN), "P": Piece(WHITE, PAWN), "R": Piece(WHITE, ROOK), "N": Piece(WHITE, KNIGHT),  "B": Piece(WHITE, BISHOP),  "K": Piece(WHITE, KING), "Q": Piece(WHITE, QUEEN)}
+
 CH_TO_COLOR = {"w": WHITE, "b": BLACK}
 
 CH_TO_INDEX = {"a":0 , "b": 1, "c" : 2, "d" : 3, "e" : 4, "f" : 5, "g" : 6, "h": 7}
@@ -60,6 +59,9 @@ ACTIVE_TO_INACTIVE = {BLACK: WHITE, WHITE: BLACK}
 
 # Bot stuff
 PIECE_TO_CLASSICAL_VALUE = {ROOK: 5, QUEEN: 10, PAWN:1, BISHOP: 3, KNIGHT:3, KING: 100}
+
+# 
+
 
 
 #  CONSTANTS TO REPRESENT function returns i guess

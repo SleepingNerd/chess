@@ -7,6 +7,7 @@ from typing import Optional
 from random import shuffle
 
 
+
 class Player():
     def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False):
         self.name = name
@@ -93,12 +94,23 @@ _____________________________________________________________
 -4.373029708862305
 -29.864010334014893
 -21.820008993148804
+______________________________________________________________
+
+-4.847798109054565
+-13.156013011932373
+-19.75897741317749
+Killer move heuristics lets goo
+___________________________________________________________________
+
+
+
 """
     
 class BasicBot(Bot):
     def __init__(self,avatar_img, avatar_img_size,name, font, font_color, antialiasing = False, depth=0):
         super().__init__(avatar_img, avatar_img_size,name, font, font_color, antialiasing, depth)
         self.killer_moves = [[], []]
+
     @engine.debug_time
     def move(self, board_data: engine.BoardData, depth = None) -> Optional[engine.Move]:
         self.killer_moves =  [[], []]
@@ -210,7 +222,10 @@ class BasicBot(Bot):
                     weight = -1
                     if board_data.board[y][x].color == piece.WHITE:
                         weight = 1
-                    score += piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[y][x].type] * weight
+                        
+                    score += piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[y][x].type]* weight
+
+                        
         return score
     
     def order(self, board_data: engine.BoardData, moves: list[engine.Move]):

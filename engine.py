@@ -2,6 +2,130 @@ import piece
 import copy
 from typing import Optional
 import time
+import numpy as np
+
+class Piece():
+    def __init__(self, color):
+        self.color = color
+    def get_moves():
+        raise SyntaxError("get_moves from Piece is supposed to be overwritten, don't call it directly!")
+    
+class Void(Piece):
+    movement_patterns = []
+    type =  piece.EMPTY
+    def get_moves():
+        return []
+class LinearPiece(Piece):
+    movement_patterns = []
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        return get_linear_moves(board_data, origin, self.movement_patterns)
+    
+class SingularPiece(Piece):
+    movement_patterns = []
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        return get_singular_moves(board_data, origin, self.movement_patterns)
+#
+class ExceptionPiece(Piece):
+    """
+    Is meant to be TOTALLY overwritten ->
+    """
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        pass
+    
+class Empty(Piece):
+    movement_patterns = []
+    type =  piece.EMPTY
+    
+class Queen(LinearPiece):
+    movement_patterns = [[1, 0], [1,1]]
+    type = piece.QUEEN
+    
+class Rook(LinearPiece):
+    movement_patterns = [[1,0]]
+    type = piece.ROOK
+
+class Bishop(LinearPiece):
+    movement_patterns = [[1,1]]
+    type = piece.BISHOP
+     
+class Knight(SingularPiece):
+    movement_patterns = [[2,1]]
+    type = piece.KNIGHT
+    
+class King(ExceptionPiece):
+    type = piece.KING
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        moves = get_linear_moves(board_data, origin, self.movement_patterns)
+        if in_check(board_data, origin, False) == False:
+                    # QUEENSIDE
+                    if board_data.castles[board_data.active][0] and not in_check(board_data, Coordinate(origin.y, origin.x-1), False):
+                        # If it's not blocked   and the left square isn't in check
+                        if  len(keep_applying(board_data, origin, [0,-1], [0, 8])) == 3:
+                            moves.append(QueenSideCastles(origin, Coordinate(origin.y, 1)))
+                            
+
+                    if board_data.castles[board_data.active][1] and not in_check(board_data, Coordinate(.y, origin.x+1), False):
+                        # If no pieces block
+                        if  len(keep_applying(board_data, origin, [0,1], [0, 8])) == 2:
+                            moves.append(KingSideCastles(origin, Coordinate(origin.y, 6)))
+                            
+class Pawn(ExceptionPiece):
+    movement_patterns = {piece.WHITE: [1, 0], piece.piece.BLACK:[-1, 0]}
+    type = piece.PAWN
+    def __init__(self, color, type):
+        super().__init__(color)
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        target_y = origin.y + self.movement_patterns[board_data.active][0]    
+        moves = []
+           
+        # If he can move forward by 1
+        if is_piece(board_data.board, Coordinate(target_y,  origin.x), piece.EMPTY):
+            moves.append(Move(origin, Coordinate(target_y, origin.x)))
+            
+            # If he's on start position
+            if origin.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
+                double_hop_target = Coordinate(origin.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], origin.x)
+                if is_piece(board_data.board, Coordinate(target_y,  origin.x), piece.EMPTY):
+                    moves.append(DoubleHop(origin, double_hop_target))
+                    
+            
+        # If he can capture left and en passant
+        target_x = origin.x+1
+
+        # If the target isn't off screen 
+        if target_x < 8:
+            state = is_capture(board_data, Coordinate(target_y, origin.x+1))
+            
+            if state == piece.CAPTURE:
+                moves.append(Capture(origin, Coordinate(target_y, target_x)))
+                
+            elif state == piece.EN_PASSANT:
+                moves.append(EnPassant(origin, Coordinate(target_y, target_x), Coordinate(origin.y, target_x)))
+                
+                
+        # Capture right and en passant
+        target_x = origin.x-1
+        # If the target isn't off screen 
+        if not target_x < 0:
+            state = is_capture(board_data, Coordinate(target_y, origin.x+1))
+            
+            if state == piece.CAPTURE:
+                moves.append(Capture(origin, Coordinate(target_y, target_x)))
+                
+            elif state == piece.EN_PASSANT:
+                moves.append(EnPassant(origin, Coordinate(target_y, target_x), Coordinate(origin.y, target_x)))
+
+        # If pawn has reached promotion square
+        if target_y == piece.PAWN_PROMOTE_POS[board_data.active]:
+            promotion_moves = []
+            for move in moves:
+                for i in (piece.ROOK, piece.BISHOP, piece.KNIGHT, piece.QUEEN):
+                    promotion_moves.append(Promotion(move.origin, move.dest, i)) 
+            return promotion_moves
+        return moves
+    
+CH_TO_PIECE = {"p": Pawn(piece.BLACK), "r": Rook(piece.BLACK), "n": Knight(piece.BLACK), "b": Bishop(piece.BLACK), "k": King(piece.BLACK), "q": Queen(
+    piece.BLACK), "P": Pawn(piece.WHITE), "R": Rook(piece.WHITE), "N": Knight(piece.WHITE),  "B": Bishop(piece.WHITE),  "K": King(piece.WHITE), "Q": Queen(piece.WHITE)}
 
 def flatten(twodlist) -> list:
     result = []
@@ -23,10 +147,6 @@ def debug_time(func):
         return value
     return wrapper
     
-    
-    
-    
-
 class Coordinate():
     def __init__(self, y, x):
         self.y = y
@@ -75,15 +195,14 @@ class BoardData():
         self.empty_board()
 
     def empty_board(self):
-        self.board = []
+        self.board = np.zeros((8,8), dtype=Piece)
         # Empty board
         for i in range(0, 8):
-            self.board.append([])
             for j in range(0, 8):
-                self.board[i].append(piece.EMPTY)
+                self.board[i][j] = Void(-1)
 
         # Reset other fields
-        self.active  = piece.WHITE
+        self.active  = piece.piece.WHITE
         # Q then K
         self.castles = [[False, False], [False, False]]
         self.reset_en_passant()
