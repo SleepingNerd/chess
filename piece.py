@@ -26,7 +26,7 @@ QUEEN = 3
 KING = 4
 
 PAWN = 5
-EMPTY = 0
+EMPTY = 6
 
 # Constants to represent
 

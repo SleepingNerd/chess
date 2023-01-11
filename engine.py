@@ -4,129 +4,6 @@ from typing import Optional
 import time
 import numpy as np
 
-class Piece():
-    def __init__(self, color):
-        self.color = color
-    def get_moves():
-        raise SyntaxError("get_moves from Piece is supposed to be overwritten, don't call it directly!")
-    
-class Void(Piece):
-    movement_patterns = []
-    type =  piece.EMPTY
-    def get_moves():
-        return []
-class LinearPiece(Piece):
-    movement_patterns = []
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
-        return get_linear_moves(board_data, origin, self.movement_patterns)
-    
-class SingularPiece(Piece):
-    movement_patterns = []
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
-        return get_singular_moves(board_data, origin, self.movement_patterns)
-#
-class ExceptionPiece(Piece):
-    """
-    Is meant to be TOTALLY overwritten ->
-    """
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
-        pass
-    
-class Empty(Piece):
-    movement_patterns = []
-    type =  piece.EMPTY
-    
-class Queen(LinearPiece):
-    movement_patterns = [[1, 0], [1,1]]
-    type = piece.QUEEN
-    
-class Rook(LinearPiece):
-    movement_patterns = [[1,0]]
-    type = piece.ROOK
-
-class Bishop(LinearPiece):
-    movement_patterns = [[1,1]]
-    type = piece.BISHOP
-     
-class Knight(SingularPiece):
-    movement_patterns = [[2,1]]
-    type = piece.KNIGHT
-    
-class King(ExceptionPiece):
-    type = piece.KING
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
-        moves = get_linear_moves(board_data, origin, self.movement_patterns)
-        if in_check(board_data, origin, False) == False:
-                    # QUEENSIDE
-                    if board_data.castles[board_data.active][0] and not in_check(board_data, Coordinate(origin.y, origin.x-1), False):
-                        # If it's not blocked   and the left square isn't in check
-                        if  len(keep_applying(board_data, origin, [0,-1], [0, 8])) == 3:
-                            moves.append(QueenSideCastles(origin, Coordinate(origin.y, 1)))
-                            
-
-                    if board_data.castles[board_data.active][1] and not in_check(board_data, Coordinate(.y, origin.x+1), False):
-                        # If no pieces block
-                        if  len(keep_applying(board_data, origin, [0,1], [0, 8])) == 2:
-                            moves.append(KingSideCastles(origin, Coordinate(origin.y, 6)))
-                            
-class Pawn(ExceptionPiece):
-    movement_patterns = {piece.WHITE: [1, 0], piece.piece.BLACK:[-1, 0]}
-    type = piece.PAWN
-    def __init__(self, color, type):
-        super().__init__(color)
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
-        target_y = origin.y + self.movement_patterns[board_data.active][0]    
-        moves = []
-           
-        # If he can move forward by 1
-        if is_piece(board_data.board, Coordinate(target_y,  origin.x), piece.EMPTY):
-            moves.append(Move(origin, Coordinate(target_y, origin.x)))
-            
-            # If he's on start position
-            if origin.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
-                double_hop_target = Coordinate(origin.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], origin.x)
-                if is_piece(board_data.board, Coordinate(target_y,  origin.x), piece.EMPTY):
-                    moves.append(DoubleHop(origin, double_hop_target))
-                    
-            
-        # If he can capture left and en passant
-        target_x = origin.x+1
-
-        # If the target isn't off screen 
-        if target_x < 8:
-            state = is_capture(board_data, Coordinate(target_y, origin.x+1))
-            
-            if state == piece.CAPTURE:
-                moves.append(Capture(origin, Coordinate(target_y, target_x)))
-                
-            elif state == piece.EN_PASSANT:
-                moves.append(EnPassant(origin, Coordinate(target_y, target_x), Coordinate(origin.y, target_x)))
-                
-                
-        # Capture right and en passant
-        target_x = origin.x-1
-        # If the target isn't off screen 
-        if not target_x < 0:
-            state = is_capture(board_data, Coordinate(target_y, origin.x+1))
-            
-            if state == piece.CAPTURE:
-                moves.append(Capture(origin, Coordinate(target_y, target_x)))
-                
-            elif state == piece.EN_PASSANT:
-                moves.append(EnPassant(origin, Coordinate(target_y, target_x), Coordinate(origin.y, target_x)))
-
-        # If pawn has reached promotion square
-        if target_y == piece.PAWN_PROMOTE_POS[board_data.active]:
-            promotion_moves = []
-            for move in moves:
-                for i in (piece.ROOK, piece.BISHOP, piece.KNIGHT, piece.QUEEN):
-                    promotion_moves.append(Promotion(move.origin, move.dest, i)) 
-            return promotion_moves
-        return moves
-    
-CH_TO_PIECE = {"p": Pawn(piece.BLACK), "r": Rook(piece.BLACK), "n": Knight(piece.BLACK), "b": Bishop(piece.BLACK), "k": King(piece.BLACK), "q": Queen(
-    piece.BLACK), "P": Pawn(piece.WHITE), "R": Rook(piece.WHITE), "N": Knight(piece.WHITE),  "B": Bishop(piece.WHITE),  "K": King(piece.WHITE), "Q": Queen(piece.WHITE)}
-
 def flatten(twodlist) -> list:
     result = []
     for lis in twodlist:
@@ -146,6 +23,13 @@ def debug_time(func):
         print(first - time.time())
         return value
     return wrapper
+
+class Piece():
+    def __init__(self, color):
+        self.color = color
+    def get_moves():
+        raise SyntaxError("get_moves from Piece is supposed to be overwritten, don't call it directly!")
+    
     
 class Coordinate():
     def __init__(self, y, x):
@@ -186,7 +70,7 @@ class QueenSideCastles(Castles):
 class KingSideCastles(Castles):
     def __init__(self,  origin: Coordinate,  dest:Coordinate):
         super().__init__(origin, dest)
-        
+    
 class BoardData():
     """
     Represents all data of a chess board
@@ -199,10 +83,10 @@ class BoardData():
         # Empty board
         for i in range(0, 8):
             for j in range(0, 8):
-                self.board[i][j] = Void(-1)
+                self.board[i][j] = Void(piece.EMPTY)
 
         # Reset other fields
-        self.active  = piece.piece.WHITE
+        self.active  = piece.WHITE
         # Q then K
         self.castles = [[False, False], [False, False]]
         self.reset_en_passant()
@@ -253,7 +137,126 @@ class BoardData():
             
         # Flip color
         self.active = piece.ACTIVE_TO_INACTIVE[self.active]
+    
+class Void(Piece):
+    "Represents empty space"
+    movement_patterns = []
+    type =  piece.EMPTY
+    def get_moves():
+        return []
+    
+class LinearPiece(Piece):
+    movement_patterns = []
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        return get_linear_moves(board_data, origin, self.movement_patterns)
+class Empty(Piece):
+    movement_patterns = []
+    type =  piece.EMPTY
+    
+class Queen(LinearPiece):
+    movement_patterns = [[1, 0], [1,1]]
+    type = piece.QUEEN
+    
+class Rook(LinearPiece):
+    movement_patterns = [[1,0]]
+    type = piece.ROOK
 
+class Bishop(LinearPiece):
+    movement_patterns = [[1,1]]
+    type = piece.BISHOP
+    
+class SingularPiece(Piece):
+    movement_patterns = []
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        return get_singular_moves(board_data, origin, self.movement_patterns)
+    
+class Knight(SingularPiece):
+    movement_patterns = [[2,1]]
+    type = piece.KNIGHT
+    
+#
+class ExceptionPiece(Piece):
+    """
+    Is meant to be TOTALLY overwritten -> 
+    """
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        pass
+    
+class King(ExceptionPiece):
+    type = piece.KING
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        moves = get_linear_moves(board_data, origin, self.movement_patterns)
+        if in_check(board_data, origin, False) == False:
+                    # QUEENSIDE
+                    if board_data.castles[board_data.active][0] and not in_check(board_data, Coordinate(origin.y, origin.x-1), False):
+                        # If it's not blocked   and the left square isn't in check
+                        if  len(keep_applying(board_data, origin, [0,-1], [0, 8])) == 3:
+                            moves.append(QueenSideCastles(origin, Coordinate(origin.y, 1)))
+                            
+
+                    if board_data.castles[board_data.active][1] and not in_check(board_data, Coordinate(origin.y, origin.x+1), False):
+                        # If no pieces block
+                        if  len(keep_applying(board_data, origin, [0,1], [0, 8])) == 2:
+                            moves.append(KingSideCastles(origin, Coordinate(origin.y, 6)))
+                            
+class Pawn(ExceptionPiece):
+    movement_patterns = {piece.WHITE: [1, 0], piece.BLACK:[-1, 0]}
+    type = piece.PAWN
+    def __init__(self, color):
+        super().__init__(color)
+    def get_moves(self, board_data: BoardData, origin: Coordinate):
+        target_y = origin.y + self.movement_patterns[board_data.active][0]    
+        moves = []
+           
+        # If he can move forward by 1
+        if is_piece(board_data, Coordinate(target_y,  origin.x), piece.EMPTY):
+            moves.append(Move(origin, Coordinate(target_y, origin.x)))
+            
+            # If he's on start position
+            if origin.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
+                double_hop_target = Coordinate(origin.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], origin.x)
+                if is_piece(board_data.board, Coordinate(target_y,  origin.x), piece.EMPTY):
+                    moves.append(DoubleHop(origin, double_hop_target))
+                    
+            
+        # If he can capture left and en passant
+        target_x = origin.x+1
+
+        # If the target isn't off screen 
+        if target_x < 8:
+            state = is_capture(board_data, Coordinate(target_y, origin.x+1))
+            
+            if state == piece.CAPTURE:
+                moves.append(Capture(origin, Coordinate(target_y, target_x)))
+                
+            elif state == piece.EN_PASSANT:
+                moves.append(EnPassant(origin, Coordinate(target_y, target_x), Coordinate(origin.y, target_x)))
+                
+                
+        # Capture right and en passant
+        target_x = origin.x-1
+        # If the target isn't off screen 
+        if not target_x < 0:
+            state = is_capture(board_data, Coordinate(target_y, origin.x+1))
+            
+            if state == piece.CAPTURE:
+                moves.append(Capture(origin, Coordinate(target_y, target_x)))
+                
+            elif state == piece.EN_PASSANT:
+                moves.append(EnPassant(origin, Coordinate(target_y, target_x), Coordinate(origin.y, target_x)))
+
+        # If pawn has reached promotion square
+        if target_y == piece.PAWN_PROMOTE_POS[board_data.active]:
+            promotion_moves = []
+            for move in moves:
+                for i in (piece.ROOK, piece.BISHOP, piece.KNIGHT, piece.QUEEN):
+                    promotion_moves.append(Promotion(move.origin, move.dest, i)) 
+            return promotion_moves
+        return moves
+    
+
+CH_TO_PIECE = {"p": Pawn(piece.BLACK), "r": Rook(piece.BLACK), "n": Knight(piece.BLACK), "b": Bishop(piece.BLACK), "k": King(piece.BLACK), "q": Queen(
+    piece.BLACK), "P": Pawn(piece.WHITE), "R": Rook(piece.WHITE), "N": Knight(piece.WHITE),  "B": Bishop(piece.WHITE),  "K": King(piece.WHITE), "Q": Queen(piece.WHITE)}
 
 def readfen(fen: str) -> BoardData:
     """
@@ -273,9 +276,10 @@ def readfen(fen: str) -> BoardData:
         for ch in fen[0][rank]:
             if file > 7:
                 break
-            elif ch in piece.CH_TO_PIECE:
-                board_data.board[len(fen[0])- 1 -rank][file] = piece.Piece(piece.CH_TO_PIECE[ch].color, piece.CH_TO_PIECE[ch].type) 
+            elif ch in CH_TO_PIECE:
+                board_data.board[len(fen[0])- 1 -rank][file] = copy.deepcopy(CH_TO_PIECE[ch])
                 file += 1
+                print()
             else:
                 file += int(ch)
 
@@ -408,11 +412,9 @@ def is_dest(board_data : BoardData, moves: list[Move], target: list[int]) -> boo
     return False
 
 def is_piece(board_data: BoardData, pos: Coordinate, piece: int):
-    try:
-        if board_data.board[pos.y][pos.x].type == piece:
-            return True
-    except:
-        pass
+    if board_data.board[pos.y][pos.x].type == piece:
+        return True
+    
     return False
 
 def is_color(board_data: BoardData, pos: Coordinate, color: int):
@@ -459,7 +461,7 @@ def on_board(x: int) -> bool:
 # Returns True if pos, is a piece not of active color
 def is_capture(board_data: BoardData, pos: Coordinate):
     try:
-        if board_data.board[pos.y][pos.x] != piece.EMPTY:
+        if board_data.board[pos.y][pos.x].type == piece.EMPTY:
             if board_data.board[pos.y][pos.x].color != board_data.active:
                 return piece.CAPTURE
             else:
@@ -491,105 +493,8 @@ def contains_piece(board_data: BoardData, lis : list[Move], piece: int):
 
 
 
-def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Coordinate]:
-    moves = []
-    p_type = board_data.board[pos.y][pos.x].type
-
-    # If piece is of linear movement type, bishop, queen, rook
-    if  p_type in piece.LINEAR_MOVERS:
-        moves.append(get_linear_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[p_type]))
-    # If piece is of singular movement type, king horse
-    elif p_type in piece.SINGULAR_MOVERS:
-        moves.append(get_singular_moves(board_data, pos, piece.PIECE_TO_MOVEMENT[p_type]))
-
-    # If piece is a pawn
-    elif p_type == piece.PAWN:
-        target_y = pos.y+piece.PAWN_MOVEMENT[board_data.active][0]    
-        pawn_moves = []
-           
-        # If he can move forward
-        if board_data.board[target_y][pos.x] == piece.EMPTY:
-            pawn_moves.append(Move(pos, Coordinate(target_y, pos.x)))
-            # If he can double hop
-            if pos.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
-                target_cord = Coordinate(pos.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], pos.x)
-                if board_data.board[target_cord.y][target_cord.x]== piece.EMPTY:
-                    moves.append(DoubleHop(pos,target_cord))
-            
-        # If he can capture left and en passant
-        x_dest = pos.x+1
-        state=is_capture(board_data, Coordinate(target_y, pos.x+1))
-        if x_dest < 8:
-            if state == piece.CAPTURE:
-                pawn_moves.append(Capture(pos, Coordinate(target_y, x_dest)))
-            elif state == piece.EN_PASSANT:
-                moves.append(EnPassant(pos, Coordinate(target_y, x_dest), Coordinate(pos.y, x_dest)))
-                
-        # Capture right and en passant
-        x_dest = pos.x-1
-        if not x_dest < 0:
-            state=is_capture(board_data, Coordinate(target_y, x_dest))
-            
-            if state == piece.CAPTURE:
-                pawn_moves.append(Capture(pos, Coordinate(target_y, x_dest)))
-            elif state == piece.EN_PASSANT:
-                moves.append(EnPassant(pos, Coordinate(target_y, x_dest), Coordinate(pos.y, x_dest)))
-                
-        # If pawn has reached promotion square
-        if target_y == piece.PAWN_PROMOTE_POS[board_data.active]:
-            for move in pawn_moves:
-                for i in (piece.ROOK, piece.BISHOP, piece.KNIGHT, piece.QUEEN):
-                    moves.append(Promotion(move.origin, move.dest, i))
-        else:
-            moves.append(pawn_moves)
-                    
-    # Castles
-    if p_type == piece.KING:
-        # If he's not in check
-        if in_check(board_data, pos, False) == False:
-            # QUEENSIDE
-            if board_data.castles[board_data.active][0] and not in_check(board_data, Coordinate(pos.y, pos.x-1), False):
-                # If it's not blocked   and the left square isn't in check
-                if  len(keep_applying(board_data, pos, [0,-1], [0, 8])) == 3:
-                    moves.append(QueenSideCastles(pos, Coordinate(pos.y, 1)))
-                    
-
-            if board_data.castles[board_data.active][1] and not in_check(board_data, Coordinate(pos.y, pos.x+1), False):
-                # If no pieces block
-                if  len(keep_applying(board_data, pos, [0,1], [0, 8])) == 2:
-                    moves.append(KingSideCastles(pos, Coordinate(pos.y, 6)))
-
-
-
-            
-        
-        
-
-    # Check for checks
-    moves = flatten(moves)
-    legal_moves = []
-    king_origin = find_king(board_data)
-    for move in moves:
-        kpos = king_origin
-        if board_data.board[move.origin.y][move.origin.x].type == piece.KING:
-            kpos = Coordinate(move.dest.y, move.dest.x)
-            if isinstance(move, Castles):
-                if isinstance(move, QueenSideCastles):
-                    kpos_x = piece.KING_X_AFTER_CASTLES[0]
-                                      
-                else:
-                    kpos_x = piece.KING_X_AFTER_CASTLES[1]
-                kpos = Coordinate(kpos.y, kpos_x)
-
-        if in_check(apply_move(board_data,move), kpos) == False:
-            legal_moves.append(move)
-        
-    return legal_moves
-
-
-
-
-
+def get_piece_moves(board_data: BoardData, pos: Coordinate) -> list[Move]:
+    return board_data.board[pos.y][pos.x].get_moves(board_data, pos)
 
 def apply_move(board_data: BoardData, move) -> BoardData:
     temp = copy.deepcopy(board_data)
@@ -612,9 +517,13 @@ def get_moves(board_data: BoardData):
     for y in range(0, len(board_data.board[0])):
 
             for x in range(0, len(board_data.board[1])):
-                if board_data.board[y][x] != piece.EMPTY:
-                    # If piece is of active color
-                    if board_data.board[y][x].color == board_data.active:
-                        moves.append(get_piece_moves(board_data, Coordinate(y, x)))
-
-    return flatten(moves)
+                if board_data.board[y][x].type != piece.EMPTY:
+                    moves.append(board_data.board[y][x].get_moves(board_data, Coordinate(y, x)))
+                    
+    
+    return moves
+                    
+                    
+            
+                    
+                    

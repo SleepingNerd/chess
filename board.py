@@ -53,6 +53,7 @@ class Board():
         for i in range(0,len(legal_moves)):
             move = legal_moves[i]
             move_dest = (move.dest.x * self.square_size[0], move.dest.y * self.square_size[1])
+            
             if isinstance(move, engine.Capture) or isinstance(move, engine.EnPassant):
                 self.surface.blit(self.capture_overlay, move_dest)
             elif isinstance(move, engine.Promotion):
@@ -67,7 +68,7 @@ class Board():
 
         for y in range(0, len(self.board_data.board[0])):
             for x in range(0, len(self.board_data.board[1])):
-                if self.board_data.board[y][x] != piece.EMPTY:
+                if self.board_data.board[y][x].type != piece.EMPTY:
                     self.surface.blit(self.texture_pack.pieces[self.board_data.board[y][x].color][self.board_data.board[y][x].type], [
                                       x*self.square_size[0], y * self.square_size[1]])
 
