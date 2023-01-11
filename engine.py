@@ -70,6 +70,7 @@ class QueenSideCastles(Castles):
 class KingSideCastles(Castles):
     def __init__(self,  origin: Coordinate,  dest:Coordinate):
         super().__init__(origin, dest)
+        
     
 class BoardData():
     """
@@ -137,6 +138,11 @@ class BoardData():
             
         # Flip color
         self.active = piece.ACTIVE_TO_INACTIVE[self.active]
+        
+def filter_legal_decorator(func):
+    def wrapper(self, board_data: BoardData, origin: Coordinate):
+        return filter_legal(board_data, func(board_data, origin))
+    return wrapper
     
 class Void(Piece):
     "Represents empty space"
@@ -147,6 +153,7 @@ class Void(Piece):
     
 class LinearPiece(Piece):
     movement_patterns = []
+    @filter_legal_decorator
     def get_moves(self, board_data: BoardData, origin: Coordinate):
         return get_linear_moves(board_data, origin, self.movement_patterns)
 class Empty(Piece):
@@ -167,6 +174,7 @@ class Bishop(LinearPiece):
     
 class SingularPiece(Piece):
     movement_patterns = []
+    @filter_legal_decorator
     def get_moves(self, board_data: BoardData, origin: Coordinate):
         return get_singular_moves(board_data, origin, self.movement_patterns)
     
@@ -184,6 +192,8 @@ class ExceptionPiece(Piece):
     
 class King(ExceptionPiece):
     type = piece.KING
+    movement_patterns = [[1,1], [1, 0]]
+    @filter_legal_decorator
     def get_moves(self, board_data: BoardData, origin: Coordinate):
         moves = get_linear_moves(board_data, origin, self.movement_patterns)
         if in_check(board_data, origin, False) == False:
@@ -204,6 +214,7 @@ class Pawn(ExceptionPiece):
     type = piece.PAWN
     def __init__(self, color):
         super().__init__(color)
+    @filter_legal_decorator
     def get_moves(self, board_data: BoardData, origin: Coordinate):
         target_y = origin.y + self.movement_patterns[board_data.active][0]    
         moves = []
@@ -215,7 +226,7 @@ class Pawn(ExceptionPiece):
             # If he's on start position
             if origin.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
                 double_hop_target = Coordinate(origin.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], origin.x)
-                if is_piece(board_data.board, Coordinate(target_y,  origin.x), piece.EMPTY):
+                if is_piece(board_data, Coordinate(target_y,  origin.x), piece.EMPTY):
                     moves.append(DoubleHop(origin, double_hop_target))
                     
             
@@ -414,9 +425,29 @@ def is_dest(board_data : BoardData, moves: list[Move], target: list[int]) -> boo
 def is_piece(board_data: BoardData, pos: Coordinate, piece: int):
     if board_data.board[pos.y][pos.x].type == piece:
         return True
-    
     return False
+def filter_legal(board_data: BoardData, moves: Move):
+    # Check for checks
+    moves = flatten(moves)
+    legal_moves = []
+    king_origin = find_king(board_data)
+    
+    for move in moves:
+        kpos = king_origin
+        if board_data.board[move.origin.y][move.origin.x].type == piece.KING:
+            kpos = Coordinate(move.dest.y, move.dest.x)
+            
+            if isinstance(move, Castles):
+                if isinstance(move, QueenSideCastles):
+                    kpos_x = piece.KING_X_AFTER_CASTLES[0]
+                                      
+                else:
+                    kpos_x = piece.KING_X_AFTER_CASTLES[1]
+                kpos = Coordinate(kpos.y, kpos_x)
 
+        if in_check(apply_move(board_data,move), kpos) == False:
+            legal_moves.append(move)
+    return legal_moves
 def is_color(board_data: BoardData, pos: Coordinate, color: int):
     try:
         if board_data.board[pos.y][pos.x].color == color:
@@ -518,9 +549,7 @@ def get_moves(board_data: BoardData):
 
             for x in range(0, len(board_data.board[1])):
                 if board_data.board[y][x].type != piece.EMPTY:
-                    moves.append(board_data.board[y][x].get_moves(board_data, Coordinate(y, x)))
-                    
-    
+                    moves.append(board_data.board[y][x].get_moves(board_data, Coordinate(y, x)))    
     return moves
                     
                     
