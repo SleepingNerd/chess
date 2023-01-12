@@ -25,6 +25,11 @@ class Human(Player):
         self.promotion = None
 
     def touch(self, board_data: engine.BoardData, pos: engine.Coordinate):
+        
+        if pos.x < 0 or  pos.x > 7 or pos.y < 0 or pos.x > 7:
+            return
+        
+        
         # If it's not empty
         if  board_data.board[pos.y][pos.x] != piece.EMPTY:
             # If of his color

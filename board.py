@@ -68,7 +68,9 @@ class Board():
 
         for y in range(0, len(self.board_data.board[0])):
             for x in range(0, len(self.board_data.board[1])):
+                
                 if self.board_data.board[y][x].type != piece.EMPTY:
+                    
                     self.surface.blit(self.texture_pack.pieces[self.board_data.board[y][x].color][self.board_data.board[y][x].type], [
                                       x*self.square_size[0], y * self.square_size[1]])
 
