@@ -27,9 +27,11 @@ def debug_time(func):
 class Piece():
     def __init__(self, color):
         self.color = color
-    def get_moves():
-        raise SyntaxError("get_moves from Piece is supposed to be overwritten, don't call it directly!")
-    
+    def get_unfiltered_moves(self, board_data, origin):
+        raise SyntaxError("get_unfiltered_moves from Piece is supposed to be overwritten, don't call it directly!")
+    def get_moves(self, board_data, origin):
+        return filter_legal(board_data, self.get_unfiltered_moves(board_data, origin))
+        
     
 class Coordinate():
     def __init__(self, y, x):
@@ -154,7 +156,7 @@ def filter_legal(board_data: BoardData, moves: Move):
     # Check for checks
     moves = flatten(moves)
     legal_moves = []
-    king_origin = find_king(board_data)
+    king_origin = find_king(board_data, board_data.active)
     
     for move in moves:
         kpos = king_origin
@@ -168,7 +170,7 @@ def filter_legal(board_data: BoardData, moves: Move):
                 else:
                     kpos_x = piece.KING_X_AFTER_CASTLES[1]
                 kpos = Coordinate(kpos.y, kpos_x)
-
+       
         if in_check(apply_move(board_data,move), kpos) == False:
             legal_moves.append(move)
     return legal_moves
@@ -177,12 +179,12 @@ class Void(Piece):
     "Represents empty space"
     movement_patterns = []
     type =  piece.EMPTY
-    def get_moves():
+    def get_unfiltered_moves():
         return []
     
 class LinearPiece(Piece):
     movement_patterns = []
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
+    def get_unfiltered_moves(self, board_data: BoardData, origin: Coordinate):
         return get_linear_moves(board_data, origin, self.movement_patterns)
 class Empty(Piece):
     movement_patterns = []
@@ -202,7 +204,7 @@ class Bishop(LinearPiece):
     
 class SingularPiece(Piece):
     movement_patterns = []
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
+    def get_unfiltered_moves(self, board_data: BoardData, origin: Coordinate):
         return get_singular_moves(board_data, origin, self.movement_patterns)
     
     
@@ -215,14 +217,15 @@ class ExceptionPiece(Piece):
     """
     Is meant to be TOTALLY overwritten -> 
     """
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
+    def get_unfiltered_moves(self, board_data: BoardData, origin: Coordinate):
         pass
     
 class King(ExceptionPiece):
     type = piece.KING
     movement_patterns = [[1,1], [1, 0]]
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
-        moves = get_linear_moves(board_data, origin, self.movement_patterns)
+    
+    def get_unfiltered_moves(self, board_data: BoardData, origin: Coordinate):
+        moves = get_singular_moves(board_data, origin, self.movement_patterns)
         if in_check(board_data, origin, False) == False:
                     # QUEENSIDE
                     if board_data.castles[board_data.active][0] and not in_check(board_data, Coordinate(origin.y, origin.x-1), False):
@@ -235,16 +238,16 @@ class King(ExceptionPiece):
                         # If no pieces block
                         if  len(keep_applying(board_data, origin, [0,1], [0, 8])) == 2:
                             moves.append(KingSideCastles(origin, Coordinate(origin.y, 6)))
+        return moves
                             
 class Pawn(ExceptionPiece):
     movement_patterns = {piece.WHITE: [1, 0], piece.BLACK:[-1, 0]}
     type = piece.PAWN
     def __init__(self, color):
         super().__init__(color)
-    def get_moves(self, board_data: BoardData, origin: Coordinate):
+    def get_unfiltered_moves(self, board_data: BoardData, origin: Coordinate):
         target_y = origin.y + self.movement_patterns[board_data.active][0]    
         moves = []
-           
         # If he can move forward by 1
         if is_piece(board_data, Coordinate(target_y,  origin.x), piece.EMPTY):
             moves.append(Move(origin, Coordinate(target_y, origin.x)))
@@ -261,7 +264,6 @@ class Pawn(ExceptionPiece):
         # If the target isn't off screen 
         if target_x < 8:
             state = is_capture(board_data, Coordinate(target_y, target_x))
-            print(state)
             
             if state == piece.CAPTURE:
                 moves.append(Capture(origin, Coordinate(target_y, target_x)))
@@ -316,7 +318,6 @@ def readfen(fen: str) -> BoardData:
             elif ch in CH_TO_PIECE:
                 board_data.board[len(fen[0])- 1 -rank][file] = copy.deepcopy(CH_TO_PIECE[ch])
                 file += 1
-                print()
             else:
                 file += int(ch)
 
@@ -449,8 +450,11 @@ def is_dest(board_data : BoardData, moves: list[Move], target: list[int]) -> boo
     return False
 
 def is_piece(board_data: BoardData, pos: Coordinate, piece: int):
-    if board_data.board[pos.y][pos.x].type == piece:
-        return True
+    try:
+        if board_data.board[pos.y][pos.x].type == piece:
+            return True
+    except:
+        pass
     return False
 
 
@@ -503,12 +507,12 @@ def is_capture(board_data: BoardData, pos: Coordinate):
         pass
     return piece.NOTHING
 
-# Finds active king
-def find_king(board_data: BoardData) -> Optional[Coordinate]:
+# Finds king of color
+def find_king(board_data: BoardData, color : int) -> Optional[Coordinate]:
     for i in range(0, 8):
         for j in range(0, 8):
-            if board_data.board[i][j] != piece.EMPTY:
-                if board_data.board[i][j].type == piece.KING and  board_data.board[i][j].color == board_data.active:
+            if board_data.board[i][j].type != piece.EMPTY:
+                if board_data.board[i][j].type == piece.KING and  board_data.board[i][j].color == color:
                     return Coordinate(i, j)
     return None
 def contains_piece(board_data: BoardData, lis : list[Move], piece: int):
@@ -537,14 +541,19 @@ def is_move_legal(board_data: BoardData, move: Move):
     return False
 
 
-def get_moves(board_data: BoardData):
+def get_moves(board_data: BoardData, color: int = piece.EMPTY):
     moves = []
+    
+    if color == piece.EMPTY:
+        color = board_data.active
+        
     # Iterate through all pieces from the active color
     for y in range(0, len(board_data.board[0])):
             for x in range(0, len(board_data.board[1])):
-                if board_data.board[y][x].type != piece.EMPTY:
+                if board_data.board[y][x].type != piece.EMPTY and board_data.board[y][x].color == color:
                     moves.append(board_data.board[y][x].get_moves(board_data, Coordinate(y, x)))    
     return flatten(moves)
+
                     
                     
             
