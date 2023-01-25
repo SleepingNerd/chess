@@ -90,7 +90,7 @@ class BoardData():
         for i in range(0, 8):
             for j in range(0, 8):
                 self.board[i][j] = Void(piece.EMPTY)
-
+    
         # Reset other fields
         self.active  = piece.WHITE
         # Q then K
@@ -112,9 +112,11 @@ class BoardData():
         # Castles will become impossible if that rook is taken, that rook moves, or the king moves
         if self.board[move.origin.y][move.origin.x].type == piece.KING:
             self.castles[self.active] = [False, False]
+            
         elif self.board[move.origin.y][move.origin.x].type == piece.ROOK:
             if move.origin.x in piece.ROOK_X_TO_CASTLES.keys() and move.origin.y == piece.CASTLE_ROW[self.active]:
                 self.castles[self.active][piece.ROOK_X_TO_CASTLES[move.origin.x] ]= False
+                
         if move.dest.y == piece.CASTLE_ROW[piece.ACTIVE_TO_INACTIVE[self.active]] and move.origin.x in piece.ROOK_X_TO_CASTLES.keys():
             self.castles[piece.ACTIVE_TO_INACTIVE[self.active]][piece.ROOK_X_TO_CASTLES[move.origin.x]] = False
         
@@ -124,23 +126,22 @@ class BoardData():
             self.board[move.origin.y][move.origin.x] = Void(piece.EMPTY)
             
         if isinstance(move, KingSideCastles):
-            self.board[move.origin.y][6] = piece.Piece(self.active, piece.KING)
-            self.board[move.origin.y][5] = piece.Piece(self.active, piece.ROOK)
+            self.board[move.origin.y][6] = King(self.active)
+            self.board[move.origin.y][5] = Rook(self.active)
             self.board[move.origin.y][move.origin.x] = Void(piece.EMPTY)
             self.board[move.origin.y][7] = Void(piece.EMPTY)
             self.castles[self.active][1] = True
 
         elif isinstance(move, QueenSideCastles):
-            self.board[move.origin.y][2] = piece.Piece(self.active, piece.KING)
-            self.board[move.origin.y][3] = piece.Piece(self.active, piece.ROOK)
+            self.board[move.origin.y][2] = King(self.active)
+            self.board[move.origin.y][3] = Rook(self.active)
             self.board[move.origin.y][move.origin.x] = Void(piece.EMPTY)
             self.board[move.origin.y][0] = Void(piece.EMPTY)
             self.castles[self.active][0] = True
                     
         #  If it could promote
         if isinstance(move, Promotion):
-            self.board[move.dest.y][move.dest.x].type = move.type
-            
+            self.board[move.dest.y][move.dest.x] = move.type(self.active)           
         # Flip color
         self.active = piece.ACTIVE_TO_INACTIVE[self.active]
         
@@ -255,7 +256,8 @@ class Pawn(ExceptionPiece):
             # If he's on start position
             if origin.y == piece.PAWN_DOUBLEHOP_POS[board_data.active]:
                 double_hop_target = Coordinate(origin.y+piece.PAWN_DOUBLEHOP_MOVEMENT[board_data.active][0], origin.x)
-                if is_piece(board_data, Coordinate(target_y,  origin.x), piece.EMPTY):
+                
+                if is_piece(board_data, double_hop_target, piece.EMPTY):
                     moves.append(DoubleHop(origin, double_hop_target))
                     
         # If he can capture left and en passant
@@ -288,7 +290,7 @@ class Pawn(ExceptionPiece):
         if target_y == piece.PAWN_PROMOTE_POS[board_data.active]:
             promotion_moves = []
             for move in moves:
-                for i in (piece.ROOK, piece.BISHOP, piece.KNIGHT, piece.QUEEN):
+                for i in (Rook, Bishop, Knight, Queen):
                     promotion_moves.append(Promotion(move.origin, move.dest, i)) 
             return promotion_moves
         return moves
@@ -429,18 +431,14 @@ def in_check(board_data : BoardData, origin: Coordinate, check_inactive=True) ->
     return False
 
 def has_no_moves(board_data : BoardData) -> bool:
-    if get_moves(board_data) ==[]:
+    if get_moves(board_data, board_data.active) ==[]:
         return True
     return False
     
 
 def in_mate(board_data : BoardData, origin: Coordinate, check_inactive=True) -> bool:
-    if in_check(board_data, origin, check_inactive) and get_moves(board_data) == []:
+    if in_check(board_data, origin, check_inactive) and get_moves(board_data, board_data.active) == []:
         return True
-
-
-
-
 
 def is_dest(board_data : BoardData, moves: list[Move], target: list[int]) -> bool:
     for move in moves:
@@ -508,6 +506,7 @@ def is_capture(board_data: BoardData, pos: Coordinate):
     return piece.NOTHING
 
 # Finds king of color
+@debug_time
 def find_king(board_data: BoardData, color : int) -> Optional[Coordinate]:
     for i in range(0, 8):
         for j in range(0, 8):
@@ -540,18 +539,13 @@ def is_move_legal(board_data: BoardData, move: Move):
         pass
     return False
 
-
-def get_moves(board_data: BoardData, color: int = piece.EMPTY):
+def get_moves(board_data: BoardData, color: int ):
     moves = []
-    
-    if color == piece.EMPTY:
-        color = board_data.active
-        
     # Iterate through all pieces from the active color
     for y in range(0, len(board_data.board[0])):
             for x in range(0, len(board_data.board[1])):
                 if board_data.board[y][x].type != piece.EMPTY and board_data.board[y][x].color == color:
-                    moves.append(board_data.board[y][x].get_moves(board_data, Coordinate(y, x)))    
+                    moves.append(board_data.board[y][x].get_moves(board_data, Coordinate(y, x)))   
     return flatten(moves)
 
                     

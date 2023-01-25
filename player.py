@@ -53,7 +53,7 @@ class Human(Player):
                     if p_type == None:
                         self.promotion = move.dest
                         return False
-                    elif move.type == p_type:
+                    elif move.type.type == p_type:
                         board_data.apply_move(move)
                 else:
                     board_data.apply_move(move)
@@ -76,7 +76,7 @@ class Bot(Player):
     
 class RandomBot(Bot):        
     def move(self, board_data: engine.BoardData) -> Optional[engine.Move]:
-        moves = engine.get_moves(board_data)
+        moves = engine.get_moves(board_data, board_data.active)
         if moves == []:
             return None
         return choice(moves)
@@ -116,12 +116,11 @@ class BasicBot(Bot):
         super().__init__(avatar_img, avatar_img_size,name, font, font_color, antialiasing, depth)
         self.killer_moves = [[], []]
 
-    @engine.debug_time
     def move(self, board_data: engine.BoardData, depth = None) -> Optional[engine.Move]:
         self.killer_moves =  [[], []]
         if depth == None:
             depth = self.depth
-        moves = engine.get_moves(board_data)
+        moves = engine.get_moves(board_data, board_data.active)
         moves = self.first_order(board_data, moves)
         current_choice = None
         alpha = -math.inf
@@ -131,10 +130,12 @@ class BasicBot(Bot):
             if board_data.active == piece.WHITE:
                 max_value = -math.inf
                 for move in moves:
+                    
                     evaluation = self.minimax(engine.apply_move(board_data,move), depth-1, alpha, beta)  
                     if max_value < evaluation:
                         max_value = evaluation  
-                        current_choice = move                  
+                        current_choice = move      
+                                    
                     alpha = max(alpha, evaluation)
                     if beta <= alpha:
                         self.killer_moves[board_data.active].append(move)
@@ -154,11 +155,7 @@ class BasicBot(Bot):
                     if beta <= alpha:
                         self.killer_moves[board_data.active].append(move)
                         break   
-                return current_choice
-        
-
-        
-                
+                return current_choice   
                     
     ""
     def minimax(self, board_data: engine.BoardData, depth, alpha, beta) -> int:
@@ -168,7 +165,7 @@ class BasicBot(Bot):
         # White should try to get the HIGHEST value 
         elif board_data.active == piece.WHITE:
             # Get moves and order them
-            moves = engine.get_moves(board_data)
+            moves = engine.get_moves(board_data, piece.WHITE)
             moves = self.order(board_data, moves)
             
             # Set a maximum
@@ -181,18 +178,21 @@ class BasicBot(Bot):
                 
                  # Overwrite node value
                 max_value = max(max_value, evaluation)
+                
                 # Overwrite alpha (best position for white)
                 alpha = max(alpha, evaluation)
-                
+            
                 # If beta is less than alpha (can only happen if beta)
                 if beta <= alpha:
                     self.killer_moves[board_data.active].append(move)
                     break
+                
             return max_value   
+        
         # Black should try to get the LOWEST value
         else:    
             # Get moves and order them
-            moves = engine.get_moves(board_data)
+            moves = engine.get_moves(board_data, piece.BLACK)
             moves = self.order(board_data, moves)
 
             # Set a minimum
@@ -223,14 +223,11 @@ class BasicBot(Bot):
         score = 0
         for y in range(0,8):
             for x in range(0, 8):
-                if isinstance(board_data.board[y][x], piece.Piece):
-                    weight = -1
-                    if board_data.board[y][x].color == piece.WHITE:
-                        weight = 1
+                weight = -1
+                if board_data.board[y][x].color == piece.WHITE:
+                    weight = 1
                         
-                    score += piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[y][x].type]* weight
-
-                        
+                score += piece.PIECE_TO_CLASSICAL_VALUE[board_data.board[y][x].type]* weight
         return score
     
     def order(self, board_data: engine.BoardData, moves: list[engine.Move]):
